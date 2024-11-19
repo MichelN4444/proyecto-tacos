@@ -1,50 +1,32 @@
-// import * as Swal from 'sweetalert2';
+document.getElementById("loginForm").addEventListener("submit", function(event) {
+    event.preventDefault(); // Evitar el envío predeterminado del formulario
 
-// document.getElementById('loginForm').addEventListener('submit', function(event) {
-//     event.preventDefault();
+    // Obtener los valores del formulario
+    const username = document.querySelector('input[name="username"]').value;
+    const password = document.querySelector('input[name="password"]').value;
 
-//     const username = document.getElementById('username').value;
-//     const password = document.getElementById('password').value;
+    // Crear un objeto de datos para enviar al servidor
+    const formData = new FormData();
+    formData.append("username", username);
+    formData.append("password", password);
 
-//     fetch('./php/login.php', {
-//         method: 'POST',
-//         headers: {
-//             'Content-Type': 'application/x-www-form-urlencoded',
-//         },
-//         body: new URLSearchParams({
-//             username: username,a
-//             password: password
-//         })
-//     })
-//     .then(response => response.json())
-//     .then(data => {
-//         if (data.success) {
-//             // Usar SweetAlert para el mensaje de éxito
-//             Swal.fire({
-//                 title: 'Login exitoso',
-//                 text: 'Redirigiendo...',
-//                 icon: 'success',
-//                 confirmButtonText: 'Aceptar'
-//             }).then(() => {
-//                 window.location.href = 'menu.html'; // Redirigir a la página de menú
-//             });
-//         } else {
-//             // Usar SweetAlert para el mensaje de error
-//             Swal.fire({
-//                 title: 'Credenciales incorrectas',
-//                 text: 'Por favor, verifica tu usuario y contraseña.',
-//                 icon: 'error',
-//                 confirmButtonText: 'Intentar de nuevo'
-//             });
-//         }
-//     })
-//     .catch(error => {
-//         // Usar SweetAlert para el error de solicitud
-//         Swal.fire({
-//             title: 'Error',
-//             text: 'Hubo un error al procesar la solicitud',
-//             icon: 'error',
-//             confirmButtonText: 'Aceptar'
-//         });
-//     });
-// });
+    // Enviar los datos al servidor usando fetch
+    fetch("../src/php/login.php", {
+        method: "POST",
+        body: formData
+    })
+    .then(response => response.text())
+    .then(data => {
+        console.log("Respuesta del servidor:", data);
+        if (data === "success") {
+            window.location.href = "../menu.html";
+        } else {
+            // Mostrar mensaje de error
+            document.getElementById("error-message").textContent = "Usuario o contraseña incorrectos.";
+        }
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        document.getElementById("error-message").textContent = "Ocurrió un error. Inténtalo de nuevo.";
+    });
+});

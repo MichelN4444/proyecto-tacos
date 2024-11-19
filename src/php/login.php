@@ -1,23 +1,17 @@
 <?php
-session_start();
-
-$user = '123';
-$contrasenia = '123';
+$usuario_correcto = "admin";
+$contrasena_correcta = "12345";
 
 if (isset($_POST['username']) && isset($_POST['password'])) {
-    $usuario = $_POST['username'];
-    $contra = $_POST['password'];
+    $username = $_POST['username'];
+    $password = $_POST['password'];
 
-    if ($usuario == $user && $contra == $contrasenia) {
-        $_SESSION['usuario'] = $usuario;
-        include "..//proyecto-tacos/menu.html";
-        exit;
+    if ($username === $usuario_correcto && $password === $contrasena_correcta) {
+        echo "success";
     } else {
-        include "..//proyecto-tacos/menu.html";
-        exit;
+        echo "error";
     }
 } else {
-    header("Location: ../../index.html");
-    exit;
+    echo "No se recibieron los datos.";
 }
 ?>
