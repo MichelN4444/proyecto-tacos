@@ -1,10 +1,10 @@
 {
-  "type":"module",
+  "type": "module",
   "name": "proyecto-tacos",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "build":"rollup --watch --config",
+    "build": "rollup --watch --config",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -12,6 +12,11 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^28.0.1",
+    "@rollup/plugin-node-resolve": "^15.3.0",
     "rollup": "^4.27.3"
+  },
+  "dependencies": {
+    "sweetalert2": "^11.6.13"
   }
 }
