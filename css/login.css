@@ -5,11 +5,11 @@ body {
     display: flex;
     justify-content: center;
     align-items: center; 
-    background-color: #606c38;
+    background-color: #e3d3b1;
 }
 
 .contenedor-login{
-    background-color: #dda15e;
+    background-color: #f1480a;
     padding: 20px;
     border-radius: 8px; /* Bordes redondeados */
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Sombra opcional */
