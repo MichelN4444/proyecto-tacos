@@ -1,0 +1,17 @@
+{
+  "type":"module",
+  "name": "proyecto-tacos",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build":"rollup --watch --config",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "rollup": "^4.27.3"
+  }
+}
