@@ -1,19 +1,24 @@
 <?php
 header('Access-Control-Allow-Origin: *');  
 
-$usuarios = [
+$admin = [
     "123" => "123",
+];
+$usuario = [
     "usuario2" => "contraseña2"
 ];
 
-// Obtener los datos enviados por POST
 $username = $_POST['username'] ?? '';
 $password = $_POST['password'] ?? '';
-// Verificar si las credenciales son correctas
-if (isset($usuarios[$username]) && $usuarios[$username] === $password) {
-    setcookie("isLoggedIn", "true", time() + 10, "/"); 
-    echo "success";
-} else {
-    echo "Usuario o contraseña incorrectos"; 
+
+if (isset($admin[$username]) && $admin[$username] === $password) {
+    setcookie("isLoggedIn", "true", time() + 3600, "/"); 
+    echo "admin";
+} else if (isset($usuario[$username]) && $usuario[$username] === $password) {
+        setcookie("isLoggedIn", "true", time() + 3600, "/"); 
+        echo "usuario";
+}else{
+        echo "Usuario o contraseña incorrectos"; 
 }
+
 ?>

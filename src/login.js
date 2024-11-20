@@ -1,3 +1,4 @@
+import Swal from "sweetalert2";
 const botonLogin = document.getElementById('botonLogin');
 botonLogin.addEventListener('click',()=>{
     login();
@@ -6,23 +7,17 @@ botonLogin.addEventListener('click',()=>{
 function login() {
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
-    // Validamos que los campos no estén vacíos
     if (username === "" || password === "") {
-        document.getElementById("error-message").innerText = "Por favor, complete todos los campos.";
-        return;
+        Swal.fire("Llena todos los campos")
+        return
     }
 
     // Datos a enviar
     const datos = "username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password);
-    console.log("Datos a enviar: ", datos);
-    
-    
     peticionAjax("POST", "http://localhost/clase2/proyecto-tacos/src/login.php", document.getElementById("error-message"), datos);
 }
 
 const peticionAjax = (metodo, recurso, dom, datos) => {
-    console.log("Método: ", metodo);
-    console.log("Recurso: ", recurso);
     let ajax = new XMLHttpRequest();
     ajax.onreadystatechange = function() {
         console.log("Estado de la petición: ", this.readyState, " | Código de estado: ", this.status);
@@ -45,15 +40,26 @@ const peticionAjax = (metodo, recurso, dom, datos) => {
 }
 
 function respuestaAjax(ajax, dom) {
-    // Procesar la respuesta del servidor
-    let response = ajax.responseText.trim();
-    console.log('Respuesta del servidor:', response);
 
-    if (response == "success") {
+    let response = ajax.responseText.trim();
+    if (response == "admin") {
+        Swal.fire({
+            icon: "success",
+            title: "Iniciando sesión",
+        });
         sessionStorage.setItem("isLoggedIn", "true");
-        window.location.replace("menu.html");
-        window.location.replace("http://localhost/clase2/proyecto-tacos/menu.html");
-    } else {
-        dom.innerText = response;
+
+        setTimeout(function() {
+            window.location.replace("http://localhost/clase2/proyecto-tacos/menu.html");
+        }, 2000);
+    } else if(response == 'usuario') {
+        console.log('usuario');
+    }else{
+        Swal.fire({
+            icon: "error",
+            title: "Oops...",
+            text: "Usuario o contraseña incorrectos",
+            // footer: '<a href="#">Why do I have this issue?</a>'
+        });
     }
 }

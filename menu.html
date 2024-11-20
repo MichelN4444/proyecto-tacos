@@ -4,13 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="./css/menu.css">
+    <script src="./src/cargarContenido.js" defer></script>
 </head>
 <script>
     if (!document.cookie.includes("isLoggedIn=true")) {
-        window.location.replace("./index.html");  // Redirige a login si no está autenticado
+        window.location.replace("./index.html");  
     }
 </script>
 <body>
-    <h1>Menu</h1>
+    <header>
+            <img src="./img/icono.png" alt="logo">
+            <h1>Taqueria</h1>
+    </header>
+    <div class="menu">
+        <a id="ventas">Ventas</a>
+        <a id="inventario">Inventario</a>
+        <a id="reportes">Reportes</a>
+    </div>
+
+    <div class="main-content" id="contenido">
+        
+        
+    </div>
 </body>
 </html>
