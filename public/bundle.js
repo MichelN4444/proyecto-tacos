@@ -13,7 +13,7 @@ document.getElementById("loginForm").addEventListener("submit", function(event) 
     formData.append("password", password);
 
     // Enviar los datos al servidor usando fetch
-    fetch("../src/php/login.php", {
+    fetch("../src/login.php", {
         method: "POST",
         body: formData
     })
