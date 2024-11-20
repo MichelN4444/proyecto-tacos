@@ -1,32 +1,45 @@
-document.getElementById("loginForm").addEventListener("submit", function(event) {
-    event.preventDefault(); // Evitar el envío predeterminado del formulario
+function login() {
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
 
-    // Obtener los valores del formulario
-    const username = document.querySelector('input[name="username"]').value;
-    const password = document.querySelector('input[name="password"]').value;
+    // Validamos que los campos no estén vacíos
+    if (username === "" || password === "") {
+        document.getElementById("error-message").innerText = "Por favor, complete todos los campos.";
+        return;
+    }
 
-    // Crear un objeto de datos para enviar al servidor
-    const formData = new FormData();
-    formData.append("username", username);
-    formData.append("password", password);
+    // Datos a enviar
+    const datos = "username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password);
 
-    // Enviar los datos al servidor usando fetch
-    fetch("../src/login.php", {
-        method: "POST",
-        body: formData
-    })
-    .then(response => response.text())
-    .then(data => {
-        console.log("Respuesta del servidor:", data);
-        if (data === "success") {
-            window.location.href = "../menu.html";
-        } else {
-            // Mostrar mensaje de error
-            document.getElementById("error-message").textContent = "Usuario o contraseña incorrectos.";
+    // Llamada a la función AJAX
+    peticionAjax("POST", "../login.php", document.getElementById("error-message"), datos);
+}
+const peticionAjax = (metodo, recurso, dom, datos) => {
+    let ajax = new XMLHttpRequest();
+    ajax.onreadystatechange = function(){
+        if (this.readyState == 4 && this.status == 200) {
+            respuestaAjax(this, dom);
         }
-    })
-    .catch(error => {
-        console.error("Error:", error);
-        document.getElementById("error-message").textContent = "Ocurrió un error. Inténtalo de nuevo.";
-    });
-});
+    };
+    ajax.open(metodo, recurso, true);
+
+    if (metodo === "POST") {
+        ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        ajax.send(datos);
+    } else {
+        ajax.send();
+    }
+}
+
+function respuestaAjax(ajax, dom) {
+    // Procesar la respuesta del servidor
+    let response = ajax.responseText.trim();
+
+    if (response === "success") {
+        // Redirigir si el login es exitoso
+        window.location.href = "dashboard.html"; // Cambia esto por el nombre de tu página de destino
+    } else {
+        // Mostrar mensaje de error si el login falla
+        dom.innerText = response; // El mensaje de error viene de login.php
+    }
+}
