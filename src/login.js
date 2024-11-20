@@ -1,7 +1,11 @@
+const botonLogin = document.getElementById('botonLogin');
+botonLogin.addEventListener('click',()=>{
+    login();
+})
+
 function login() {
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
-
     // Validamos que los campos no estén vacíos
     if (username === "" || password === "") {
         document.getElementById("error-message").innerText = "Por favor, complete todos los campos.";
@@ -10,15 +14,24 @@ function login() {
 
     // Datos a enviar
     const datos = "username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password);
-
-    // Llamada a la función AJAX
-    peticionAjax("POST", "../login.php", document.getElementById("error-message"), datos);
+    console.log("Datos a enviar: ", datos);
+    
+    
+    peticionAjax("POST", "http://localhost/clase2/proyecto-tacos/src/login.php", document.getElementById("error-message"), datos);
 }
+
 const peticionAjax = (metodo, recurso, dom, datos) => {
+    console.log("Método: ", metodo);
+    console.log("Recurso: ", recurso);
     let ajax = new XMLHttpRequest();
-    ajax.onreadystatechange = function(){
-        if (this.readyState == 4 && this.status == 200) {
-            respuestaAjax(this, dom);
+    ajax.onreadystatechange = function() {
+        console.log("Estado de la petición: ", this.readyState, " | Código de estado: ", this.status);
+        if (this.readyState == 4) {
+            if (this.status == 200) {
+                respuestaAjax(this, dom);
+            } else {
+                dom.innerText = "Hubo un error al realizar la petición. Intenta nuevamente.";
+            }
         }
     };
     ajax.open(metodo, recurso, true);
@@ -34,12 +47,13 @@ const peticionAjax = (metodo, recurso, dom, datos) => {
 function respuestaAjax(ajax, dom) {
     // Procesar la respuesta del servidor
     let response = ajax.responseText.trim();
+    console.log('Respuesta del servidor:', response);
 
-    if (response === "success") {
-        // Redirigir si el login es exitoso
-        window.location.href = "dashboard.html"; // Cambia esto por el nombre de tu página de destino
+    if (response == "success") {
+        sessionStorage.setItem("isLoggedIn", "true");
+        window.location.replace("menu.html");
+        window.location.replace("http://localhost/clase2/proyecto-tacos/menu.html");
     } else {
-        // Mostrar mensaje de error si el login falla
-        dom.innerText = response; // El mensaje de error viene de login.php
+        dom.innerText = response;
     }
 }

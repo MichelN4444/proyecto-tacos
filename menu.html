@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
 </head>
+<script>
+    if (!document.cookie.includes("isLoggedIn=true")) {
+        window.location.replace("./index.html");  // Redirige a login si no está autenticado
+    }
+</script>
 <body>
     <h1>Menu</h1>
 </body>
