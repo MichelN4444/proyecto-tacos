@@ -2,9 +2,10 @@ const menuVentas = document.getElementById('ventas');
 const menuInventarios = document.getElementById('inventario');
 const menuReportes = document.getElementById('reportes');
 const contenido = document.getElementById('contenido');
-const ticket = document.getElementById('ticket');
+const ticket = document.createElement('div');
 
 menuVentas.addEventListener('click',()=>{
+    contenido.innerHTML = ''
     const plantilla = `
     <button class="mesa" id='mesa1' ><img src="./img/mesa.png"></button>
         <button class="mesa" id='mesa2' style="left: 380px; top: 200px;"><img src="./img/mesa.png"></button>
@@ -20,12 +21,40 @@ menuVentas.addEventListener('click',()=>{
 
     contenido.appendChild(contenedorNuevo);
 
-    const mesa1 = document.getElementById('mesa1');
-    mesa1.addEventListener('click',()=>{
-        ticket.classList.add('ticket')
-        ticket.classList.remove('menu-ticket')
-        console.log(ticket);
-    })
+    const mesas = document.querySelectorAll('.mesa');
+    console.log(mesas);
+    mesas.forEach(mesa => {
+        mesa.addEventListener('click',()=>{
+            ticket.classList.add('ticket');
+            ticket.innerHTML = `<h2>Orden</h2>
+            <form>
+                <label>Tacos</label><br>
+                <label>Pastor</label>
+                <input type="number"><br>
+                <label>Suadero</label>
+                <input type="number"><br>
+                <label>Campechanos</label>
+                <input type="number"><br>
+                <label>Tacos</label><br>
+                <label>Pastor</label>
+                <input type="number"><br>
+                <label>Suadero</label>
+                <input type="number"><br>
+                <label>Campechanos</label>
+                <input type="number"><br>
+                <label>Tacos</label><br>
+                <label>Pastor</label>
+                <input type="number"><br>
+                <label>Suadero</label>
+                <input type="number"><br>
+                <label>Campechanos</label>
+                <input type="number"><br>
+                <input type="button" value="Minimizar" onclick="minimizar()">
+                <input type='button' value="Cerrar cuenta">
+            </form>`;
+            contenido.appendChild(ticket);
+        });
+    });
 })
 function minimizar(){
     ticket.classList.add('menu-ticket')
@@ -34,10 +63,17 @@ function minimizar(){
 
 
 menuInventarios.addEventListener('click',()=>{
+    contenido.innerHTML = ''
     const plantilla = `<h1>Hola</h1>`;
-    console.log('pl');
-    contenido.innerHTML = plantilla;
+    const contenedorNuevo = document.createElement('div');
+    contenedorNuevo.innerHTML = plantilla;
+    contenido.appendChild(contenedorNuevo);
 })
+
+function cerrarSesion(){
+    document.cookie = "login=true;expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    window.location.replace("./index.html");  
+}
 
 // document.querySelectorAll('.mesa').forEach(mesa => {
 //     mesa.addEventListener('mousedown', function(e) {

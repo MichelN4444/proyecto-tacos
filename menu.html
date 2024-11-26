@@ -6,7 +6,7 @@
     <title>Document</title>
     <link rel="stylesheet" href="./css/menu.css">
     <script>
-        if (!document.cookie.includes("isLoggedIn=true")) {
+        if (!document.cookie.includes("login=true")) {
             window.location.replace("./index.html");  
         }
     </script>
@@ -21,36 +21,14 @@
         <a id="ventas">Ventas</a>
         <a id="inventario">Inventario</a>
         <a id="reportes">Reportes</a>
+        <div class="boton">
+            <button onclick="cerrarSesion()">Cerrar sesión</button>
+        </div>
     </div>
 
+
     <div class="main-content" id="contenido">
-        <div class="menu-ticket" id="ticket">
-            <h2>Orden</h2>
-            <form>
-                <label>Tacos</label><br>
-                <label>Pastor</label>
-                <input type="number"><br>
-                <label>Suadero</label>
-                <input type="number"><br>
-                <label>Campechanos</label>
-                <input type="number"><br>
-                <label>Tacos</label><br>
-                <label>Pastor</label>
-                <input type="number"><br>
-                <label>Suadero</label>
-                <input type="number"><br>
-                <label>Campechanos</label>
-                <input type="number"><br>
-                <label>Tacos</label><br>
-                <label>Pastor</label>
-                <input type="number"><br>
-                <label>Suadero</label>
-                <input type="number"><br>
-                <label>Campechanos</label>
-                <input type="number"><br>
-                <input type="button" value="Minimizar" onclick="minimizar()">
-            </form>
-        </div>
+        <!-- Aqui va el contenido dinamico -->
     </div>
 </body>
 </html>
