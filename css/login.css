@@ -11,6 +11,13 @@ body {
 
 }
 
+h1{
+    color: #333;
+    background: rgba(255, 255, 255, 0.5); /* Fondo semitransparente */
+    backdrop-filter: blur(10px); /* Aplicar el desenfoque */
+    -webkit-backdrop-filter: blur(10px);
+}
+
 .contenedor-login{
     background-image: url("../img/imagenesindex/tacos-al-pastor.jpg");
     background-size: 150%;
