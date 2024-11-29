@@ -1,105 +1,38 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Botón Limón con Texto y Jugo</title>
-<style>
-  /* Contenedor del botón en forma de medio círculo */
-  .boton-limon {
-    position: relative;
-    width: 120px;
-    height: 60px;
-    background: #9acd32; /* Color verde claro para el limón */
-    border: 4px solid #6b8e23; /* Borde verde oscuro */
-    border-radius: 120px 120px 0 0; /* Forma de medio círculo */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 18px;
-    font-weight: bold;
-    color: #ffffff; /* Color del texto */
-    text-shadow: 1px 1px 2px #6b8e23; /* Sombra para destacar el texto */
-    cursor: pointer;
-    overflow: hidden;
-    transition: transform 0.3s ease;
-    z-index: 1; /* Para que el texto se muestre en frente */
-  }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taquería</title>
+    <!-- Agregar FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        /* Estilo del botón */
+        .boton-guardar-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+        }
 
-  /* Línea de corte central en el limón */
-  .boton-limon::before {
-    content: "";
-    position: absolute;
-    width: 100%;
-    height: 4px;
-    background: #6b8e23;
-    top: 50%;
-  }
-
-  /* Textura del limón en puntos */
-  .punto {
-    position: absolute;
-    width: 6px;
-    height: 6px;
-    background: #6b8e23;
-    border-radius: 50%;
-    opacity: 0.8;
-    z-index: 1;
-  }
-
-  /* Posición de los puntos para simular textura */
-  .punto:nth-child(1) { top: 15px; left: 30px; }
-  .punto:nth-child(2) { top: 25px; left: 50px; }
-  .punto:nth-child(3) { top: 35px; left: 70px; }
-  .punto:nth-child(4) { top: 20px; left: 90px; }
-  .punto:nth-child(5) { top: 40px; left: 40px; }
-
-  /* Gotas de jugo */
-  .gota {
-    position: absolute;
-    width: 8px;
-    height: 15px;
-    background: #a2e83b; /* Color de jugo */
-    border-radius: 50% 50% 0 0;
-    opacity: 0;
-    transform: scaleY(0.5);
-    transition: opacity 0.3s ease, transform 0.5s ease;
-    z-index: 0; /* Las gotas aparecen detrás del texto */
-  }
-
-  /* Posición de las gotas */
-  .gota:nth-child(6) { top: 60px; left: 30px; }
-  .gota:nth-child(7) { top: 60px; left: 60px; }
-  .gota:nth-child(8) { top: 60px; left: 90px; }
-
-  /* Efecto de exprimido al pasar el cursor */
-  .boton-limon:hover {
-    transform: scaleY(0.9);
-  }
-
-  /* Animación de las gotas al hacer hover */
-  .boton-limon:hover .gota {
-    opacity: 1;
-    transform: scaleY(1.2) translateY(5px);
-  }
-</style>
+        .boton-guardar-btn i {
+            margin-right: 10px;
+            font-size: 20px;
+        }
+    </style>
 </head>
 <body>
 
-<!-- Botón en forma de medio limón con texto "Enviar" y gotas de jugo -->
-<div class="boton-limon">
-  Enviar
-  <!-- Puntos de textura -->
-  <div class="punto"></div>
-  <div class="punto"></div>
-  <div class="punto"></div>
-  <div class="punto"></div>
-  <div class="punto"></div>
-  <!-- Gotas de jugo -->
-  <div class="gota"></div>
-  <div class="gota"></div>
-  <div class="gota"></div>
-</div>
+    <!-- Botón de guardar posiciones con ícono -->
+    <button class="boton-guardar-btn">
+        <i class="fas fa-save"></i> Guardar posiciones
+    </button>
 
 </body>
 </html>

@@ -1,22 +1,28 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Taquería</title>
+    
+    <!-- Vincular el archivo CSS con los estilos generales -->
     <link rel="stylesheet" href="./css/menu.css">
-    <script>
-        if (!document.cookie.includes("login=true")) {
-            window.location.replace("./index.html");  
-        }
-    </script>
-    <script src="./src/cargarContenido.js" defer></script>
+    
+    <!-- Agregar FontAwesome para los íconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
+    <!-- Script para cargar contenido dinámico -->
+    <script defer src="./src/cargarContenido.js"></script>
 </head>
 <body>
+
+    <!-- Header con logo e información -->
     <header>
-            <img src="./img/icono.png" alt="logo">
-            <h1>Taqueria</h1>
+        <img src="./img/icono.png" alt="logo">
+        <h1>Taquería</h1>
     </header>
+
+    <!-- Menú lateral con enlaces de navegación -->
     <div class="menu">
         <a id="ventas">Ventas</a>
         <a id="inventario">Inventario</a>
@@ -26,9 +32,15 @@
         </div>
     </div>
 
-
+    <!-- Contenedor principal para el contenido dinámico -->
     <div class="main-content" id="contenido">
-        <!-- Aqui va el contenido dinamico -->
+        <!-- Aquí se cargará el contenido dinámico -->
     </div>
+
+    <!-- Botón de guardar posiciones -->
+    <button class="boton-guardar-btn" onclick="guardarPosiciones()">
+        <i class="fas fa-save"></i> Guardar posiciones
+    </button>
+
 </body>
 </html>
