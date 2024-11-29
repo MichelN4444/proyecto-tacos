@@ -6,16 +6,17 @@ botonLogin.addEventListener('click',()=>{
 })
 
 function login() {
+    console.log('logueado');
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
     if (username === "" || password === "") {
         Swal.fire("Llena todos los campos")
         return
     }
-
+// hola
     // Datos a enviar
     const datos = "username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password);
-    peticionAjax("POST", "./login.php", document.getElementById("error-message"), datos);
+    peticionAjax("POST", "http://localhost/php/proyecto-tacos/src/login.php", document.getElementById("error-message"), datos);
 }
 
 const peticionAjax = (metodo, recurso, dom, datos) => {
@@ -51,7 +52,7 @@ function respuestaAjax(ajax, dom) {
         sessionStorage.setItem("isLoggedIn", "true");
 
         setTimeout(function() {
-            window.location.replace("http://localhost/clase2/proyecto-tacos/menu.html");
+            window.location.replace("http://localhost/php/proyecto-tacos/menu.html");
         }, 2000);
     } else if(response == 'usuario') {
         console.log('usuario');
