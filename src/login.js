@@ -16,11 +16,7 @@ function login() {
 // hola
     // Datos a enviar
     const datos = "username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password);
-<<<<<<< HEAD
-    peticionAjax("POST", "http://localhost/php/proyecto-tacos/src/login.php", document.getElementById("error-message"), datos);
-=======
     peticionAjax("POST", "http://localhost:82/proyecto-tacos/src/login.php", document.getElementById("error-message"), datos);
->>>>>>> b5f2851879592366f1b56f14146c52acc9c8da3f
 }
 
 const peticionAjax = (metodo, recurso, dom, datos) => {
@@ -56,11 +52,8 @@ function respuestaAjax(ajax, dom) {
         sessionStorage.setItem("isLoggedIn", "true");
 
         setTimeout(function() {
-<<<<<<< HEAD
-            window.location.replace("http://localhost/php/proyecto-tacos/menu.html");
-=======
             window.location.replace("http://localhost:82/proyecto-tacos/menu.html");
->>>>>>> b5f2851879592366f1b56f14146c52acc9c8da3f
+
         }, 2000);
     } else if(response == 'usuario') {
         console.log('usuario');
