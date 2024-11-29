@@ -3987,7 +3987,7 @@ function login() {
 
     // Datos a enviar
     const datos = "username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password);
-    peticionAjax("POST", "http://localhost/clase2/proyecto-tacos/src/login.php", document.getElementById("error-message"), datos);
+    peticionAjax("POST", "./login.php", document.getElementById("error-message"), datos);
 }
 
 const peticionAjax = (metodo, recurso, dom, datos) => {
