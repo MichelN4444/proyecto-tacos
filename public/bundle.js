@@ -89,6 +89,21 @@ menuVentas.addEventListener('click',()=>{
     });
 });
 
+<<<<<<< HEAD
+function login() {
+    console.log('logueado');
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    if (username === "" || password === "") {
+        Swal.fire("Llena todos los campos");
+        return
+    }
+// hola
+    // Datos a enviar
+    const datos = "username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password);
+    peticionAjax("POST", "http://localhost/php/proyecto-tacos/src/login.php", document.getElementById("error-message"), datos);
+}
+=======
 menuInventarios.addEventListener('click',()=>{
     contenido.innerHTML = '';
     const plantilla = `<h1>Hola</h1>`;
@@ -101,6 +116,7 @@ menuInventarios.addEventListener('click',()=>{
 //     mesa.addEventListener('mousedown', function(e) {
 //         let shiftX = e.clientX - mesa.getBoundingClientRect().left;
 //         let shiftY = e.clientY - mesa.getBoundingClientRect().top;
+>>>>>>> 1fdc1c4021cfc5f26bda09aa18a01d6bf5c441dc
 
 //         function moveAt(pageX, pageY) {
 //             mesa.style.left = pageX - shiftX + 'px';
@@ -119,6 +135,22 @@ menuInventarios.addEventListener('click',()=>{
 //             document.removeEventListener('mousemove', onMouseMove);
 //         });
 
+<<<<<<< HEAD
+        setTimeout(function() {
+            window.location.replace("http://localhost/php/proyecto-tacos/menu.html");
+        }, 2000);
+    } else if(response == 'usuario') {
+        console.log('usuario');
+    }else {
+        Swal.fire({
+            icon: "error",
+            title: "Oops...",
+            text: "Usuario o contraseña incorrectos",
+            // footer: '<a href="#">Why do I have this issue?</a>'
+        });
+    }
+}
+=======
 //         // Evitar que la mesa se arrastre en Firefox
 //         mesa.ondragstart = function() {
 //             return false;
@@ -155,5 +187,6 @@ menuInventarios.addEventListener('click',()=>{
 
 // // Cargar las posiciones al cargar la página
 // window.onload = cargarPosiciones;
+>>>>>>> 1fdc1c4021cfc5f26bda09aa18a01d6bf5c441dc
 
 console.log('hola mundoo');
