@@ -1,3 +1,2 @@
-import './login';
-import './eventosMesas';
+import './cargarContenido';
 console.log('hola mundoo');
