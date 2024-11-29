@@ -1,5 +1,5 @@
-import Swal from "sweetalert2";
 
+//Hola
 const botonLogin = document.getElementById('botonLogin');
 botonLogin.addEventListener('click',()=>{
     login();
@@ -15,7 +15,7 @@ function login() {
 
     // Datos a enviar
     const datos = "username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password);
-    peticionAjax("POST", "http://localhost/clase2/proyecto-tacos/src/login.php", document.getElementById("error-message"), datos);
+    peticionAjax("POST", "http://localhost:82/proyecto-tacos/src/login.php", document.getElementById("error-message"), datos);
 }
 
 const peticionAjax = (metodo, recurso, dom, datos) => {
@@ -51,7 +51,7 @@ function respuestaAjax(ajax, dom) {
         sessionStorage.setItem("isLoggedIn", "true");
 
         setTimeout(function() {
-            window.location.replace("http://localhost/clase2/proyecto-tacos/menu.html");
+            window.location.replace("http://localhost:82/proyecto-tacos/menu.html");
         }, 2000);
     } else if(response == 'usuario') {
         console.log('usuario');
@@ -60,7 +60,6 @@ function respuestaAjax(ajax, dom) {
             icon: "error",
             title: "Oops...",
             text: "Usuario o contraseña incorrectos",
-            // footer: '<a href="#">Why do I have this issue?</a>'
         });
     }
 }
