@@ -1,3 +1,5 @@
+import {formulario} from './tacosDinamicos';
+
 const menuVentas = document.getElementById('ventas');
 const menuInventarios = document.getElementById('inventario');
 const menuReportes = document.getElementById('reportes');
@@ -92,6 +94,7 @@ function minimizar(index){
         ticket.classList.add('hidden');
     }
 }
+window.minimizar = minimizar;//Hacerlo visible
 
 function cerrarCuenta(index){
     const ticket = tickets[index];
@@ -101,7 +104,7 @@ function cerrarCuenta(index){
 
 menuInventarios.addEventListener('click',()=>{
     contenido.innerHTML = ''
-    const plantilla = `<h1>Hola</h1>`;
+    const plantilla = formulario;
     const contenedorNuevo = document.createElement('div');
     contenedorNuevo.innerHTML = plantilla;
     contenido.appendChild(contenedorNuevo);
@@ -111,6 +114,7 @@ function cerrarSesion(){
     document.cookie = "login=true;expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
     window.location.replace("./index.html");  
 }
+window.cerrarSesion = cerrarSesion;
 
 // document.querySelectorAll('.mesa').forEach(mesa => {
 //     mesa.addEventListener('mousedown', function(e) {

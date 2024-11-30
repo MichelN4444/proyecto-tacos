@@ -202,7 +202,7 @@ header img {
 
 /* Estilo de las mesas */
 .mesa {
-    background-color: #fff;
+    background-color: transparent;
     border: 1px solid #ddd;
     padding: 20px;
     cursor: pointer;
