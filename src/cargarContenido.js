@@ -26,100 +26,98 @@ menuVentas.addEventListener('click',()=>{
 
     ///Contenido dinamico
     const mesas = document.querySelectorAll('.mesa');
+
     fetch('http://localhost:82/proyecto-tacos/src/cargarProductosBd.php')
-    .then(response => response.json())
-    .then(productos => {
-        console.log(productos);
-        console.log(mesas);
-        mesas.forEach((mesa, i) => {
-            console.log(mesa);
-            mesa.addEventListener('click',()=>{
-                console.log('click');
-                if (!tickets[i]) {//Si no existe; es decir como no tenemos nada guardado
-                    tickets[i] = {};
-                    const ticket = document.createElement('div');
-                    ticket.classList.add('ticket');
+        .then(response => response.json())
+        .then(productos => {
+
+            mesas.forEach((mesa, i) => {
+                mesa.addEventListener('click', () => {
+                    console.log('clicck');
+    
+                    if (!tickets[i]) { // Si el ticket no existe en `tickets`
+                        tickets[i] = {};
+                        console.log('no existe');
+                    }
                     
-                    let html = `<h2>Orden de mesa ${i + 1}</h2>
-                        <form data-index="${i}">
-                            <details>
-                                <summary>Tacos</summary>`;
-
-                     // Filtrar productos por categoría "Tacos"
-                    const tacos = productos.filter(producto => producto.categoria === 'Tacos');
-                    tacos.forEach(taco => {
-                        html += `<label>${taco.nombre}</label>
-                            <input type="number" name="${taco.nombre.toLowerCase()}" value="${tickets[i][taco.nombre.toLowerCase()] || 0}"><br>`;
-                    });
- 
-                    html += `</details>
-                    <details>
-                        <summary>Alambres</summary>`;
-
-                    const alambres = productos.filter(producto => producto.categoria === 'Alambres');
-                    alambres.forEach(alambre => {
-                        html += `<label>${alambre.nombre}</label>
-                            <input type="number" name="${alambre.nombre.toLowerCase()}" value="${tickets[i][alambre.nombre.toLowerCase()] || 0}"><br>`;
-                    });
-
-                    html += `</details>
+                    let ticket = document.querySelector(`.ticket[data-index="${i}"]`);
+                    if (!ticket) { // Si no existe en el DOM
+                        console.log('ya existia');
+                        ticket = document.createElement('div');
+                        ticket.classList.add('ticket');
+                        ticket.dataset.index = i;
+                        console.log('ya ');
+                        let html = `<h2>Orden de mesa ${i + 1}</h2>
+                            <form data-index="${i}">
+                                <details>
+                                    <summary>Tacos</summary>`;
+                        const tacos = productos.filter(producto => producto.categoria === 'Tacos');
+                        tacos.forEach(taco => {
+                            html += `<label>${taco.nombre}</label>
+                                <input type="number" name="${taco.nombre.toLowerCase()}" value="${tickets[i][taco.nombre.toLowerCase()] || 0}"><br>`;
+                        });
+    
+                        html += `</details>
                         <details>
-                            <summary>Bebidas</summary>`;
+                            <summary>Alambres</summary>`;
+    
+                        const alambres = productos.filter(producto => producto.categoria === 'Alambres');
+                        alambres.forEach(alambre => {
+                            html += `<label>${alambre.nombre}</label>
+                                <input type="number" name="${alambre.nombre.toLowerCase()}" value="${tickets[i][alambre.nombre.toLowerCase()] || 0}"><br>`;
+                        });
+    
+                        html += `</details>
+                            <details>
+                                <summary>Bebidas</summary>`;
+    
+                        const bebidas = productos.filter(producto => producto.categoria === 'Bebidas');
+                        bebidas.forEach(bebida => {
+                            html += `<label>${bebida.nombre}</label>
+                                    <input type='number' name='${bebida.nombre.toLowerCase()}' value='${tickets[i][bebida.nombre.toLowerCase()] || 0}'><br>`;
+                        });
+    
+                        html += `</details>
+                        <details>
+                            <summary>Postres</summary>`;
+    
+                        const postres = productos.filter(producto => producto.categoria === 'Postres');
+                        postres.forEach(postre => {
+                            html += `<label>${postre.nombre}</label>
+                                <input type="number" name="${postre.nombre.toLowerCase()}" value="${tickets[i][postre.nombre.toLowerCase()] || 0}"><br>`;
+                        });
+    
+                        html += `</details>
+                                <input type="button" value="Minimizar" onclick="minimizar(${i})">
+                                <input type="button" value="Cerrar cuenta" onclick="cerrarCuenta(${i})">
+                            </form>`;
+    
+                        ticket.innerHTML = html;
 
-                    const Bebidas = productos.filter(producto => producto.categoria === 'Bebidas');
-                    Bebidas.forEach(bebida =>{
-                        html += `<label>${bebida.nombre}</label>
-                                <input type='number' name='${bebida.nombre.toLowerCase()}' value='${tickets[i][bebida.nombre.toLowerCase()] || 0}'><br>`;
-                    })
-
-                    html += `</details>
-                    <details>
-                        <summary>Postres</summary>`;
-                
-                    // Filtrar productos por categoría "Postres"
-                    const postres = productos.filter(producto => producto.categoria === 'Postres');
-                    postres.forEach(postre => {
-                        html += `<label>${postre.nombre}</label>
-                            <input type="number" name="${postre.nombre.toLowerCase()}" value="${tickets[i][postre.nombre.toLowerCase()] || 0}"><br>`;
-                    });
-
-                    html += `</details>
-                            <input type="button" value="Minimizar" onclick="minimizar(${i})">
-                            <input type="button" value="Cerrar cuenta" onclick="cerrarCuenta(${i})">
-                        </form>`;
-                
-                ticket.innerHTML = html;
+                        ticket.querySelectorAll('input[type=number]').forEach(input => {
+                            input.addEventListener('input', () => {
+                                tickets[i][input.name] = input.value;
+                            });
+                        });
+                        console.log(ticket);
+                        contenido.appendChild(ticket);
+                    }
+                    if (ticket.classList.contains('hidden')) {
+                        ticket.classList.remove('hidden')
+                    }
                     
-                ticket.querySelectorAll('input[type=number]').forEach(input =>{
-                    input.addEventListener('input',()=>{
-                        tickets[i][input.name] = input.value;
-                        /*
-                            tickets = { esto es un objeto
-                                0: {
-                                    pastor: "3"...
-                                    lon: "2"
-                                }
-                            }
-                        */
-                    });
                 });
-                ticket.dataset.index = i;
-                contenido.appendChild(ticket)
-            }else{//Si ya existe
-                //Los [] permiten buscar elementos por atributos
-                const ticket = document.querySelector(`.ticket[data-index="${i}"]`);
-                ticket.classList.toggle('hidden'); //añade o remueve .toggle
-            }
             });
         });
     });
-})
-function minimizar(index){
-    const ticket = document.querySelector(`.ticket[data-index="${index}"]`);
-    if (ticket) {
-        ticket.classList.add('hidden');
+    
+    function minimizar(index) {
+        const ticket = document.querySelector(`.ticket[data-index="${index}"]`);
+        if (ticket) {
+            ticket.classList.add('hidden');
+        }
     }
-}
+    
 window.minimizar = minimizar;//Hacerlo visible
 
 function cerrarCuenta(index){
