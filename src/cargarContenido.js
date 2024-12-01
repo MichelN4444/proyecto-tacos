@@ -1,4 +1,5 @@
-import {formulario} from './tacosDinamicos';
+import {formulario} from './menuDinamico';
+import { agregarProducto } from './menuDinamico';
 
 const menuVentas = document.getElementById('ventas');
 const menuInventarios = document.getElementById('inventario');
@@ -22,49 +23,73 @@ menuVentas.addEventListener('click',()=>{
     const contenedorNuevo = document.createElement('div');
     contenedorNuevo.innerHTML = plantilla;
     contenido.appendChild(contenedorNuevo);
+
+    ///Contenido dinamico
     const mesas = document.querySelectorAll('.mesa');
+    fetch('http://localhost:82/proyecto-tacos/src/cargarProductosBd.php')
+    .then(response => response.json())
+    .then(productos => {
+        console.log(productos);
+        console.log(mesas);
+        mesas.forEach((mesa, i) => {
+            console.log(mesa);
+            mesa.addEventListener('click',()=>{
+                console.log('click');
+                if (!tickets[i]) {//Si no existe; es decir como no tenemos nada guardado
+                    tickets[i] = {};
+                    const ticket = document.createElement('div');
+                    ticket.classList.add('ticket');
+                    
+                    let html = `<h2>Orden de mesa ${i + 1}</h2>
+                        <form data-index="${i}">
+                            <details>
+                                <summary>Tacos</summary>`;
 
-    mesas.forEach((mesa, i) => {
-        mesa.addEventListener('click',()=>{
-            if (!tickets[i]) {//Si no existe; es decir como no tenemos nada guardado
-                tickets[i] = {};
-                const ticket = document.createElement('div');
-                ticket.classList.add('ticket');
-                //El data del form ahora no sirve para nada
-                ticket.innerHTML = `<h2>Orden de mesa ${i+1}</h2>
-                <form data-index="${i}">
+                     // Filtrar productos por categoría "Tacos"
+                    const tacos = productos.filter(producto => producto.categoria === 'Tacos');
+                    tacos.forEach(taco => {
+                        html += `<label>${taco.nombre}</label>
+                            <input type="number" name="${taco.nombre.toLowerCase()}" value="${tickets[i][taco.nombre.toLowerCase()] || 0}"><br>`;
+                    });
+ 
+                    html += `</details>
                     <details>
-                        <summary>Tacos</summary>
-                        <label>Pastor</label>
-                        <input type="number" name="pastor" value="${tickets[i].pastor || 0}"><br>
-                        <label>Suadero</label>
-                        <input type="number" name="suadero" value="${tickets[i].suadero || 0}"><br>
-                        <label>Campechanos</label>
-                        <input type="number" name="campechanos" value="${tickets[i].campechanos || 0}"><br>
-                    </details>
-                    <details>
-                        <summary>Bebidas</summary>
-                        <label>Jamaica</label>
-                        <input type="number" name="jamaica" value="${tickets[i].jamaica || 0}"><br>
-                        <label>Horchata</label>
-                        <input type="number" name="horchata" value="${tickets[i].horchata || 0}"><br>
-                        <label>Limon</label>
-                        <input type="number" name="limon" value="${tickets[i].limon || 0}"><br>
-                    </details>
-                    <details>
-                        <summary>Postres</summary>
-                        <label>Cheesecake</label>
-                        <input type="number" name="cheesecake" value="${tickets[i].cheesecake || 0}"><br>
-                        <label>Flan</label>
-                        <input type="number" name="flan" value="${tickets[i].flan || 0}"><br>
-                        <label>Fresas</label>
-                        <input type="number" name="fresas" value="${tickets[i].fresas || 0}"><br>
-                    </details>
-                    <input type="button" value="Minimizar" onclick="minimizar(${i})">
-                    <input type="button" value="Cerrar cuenta" onclick="cerrarCuenta(${i})">
-                </form>
-                `;
+                        <summary>Alambres</summary>`;
 
+                    const alambres = productos.filter(producto => producto.categoria === 'Alambres');
+                    alambres.forEach(alambre => {
+                        html += `<label>${alambre.nombre}</label>
+                            <input type="number" name="${alambre.nombre.toLowerCase()}" value="${tickets[i][alambre.nombre.toLowerCase()] || 0}"><br>`;
+                    });
+
+                    html += `</details>
+                        <details>
+                            <summary>Bebidas</summary>`;
+
+                    const Bebidas = productos.filter(producto => producto.categoria === 'Bebidas');
+                    Bebidas.forEach(bebida =>{
+                        html += `<label>${bebida.nombre}</label>
+                                <input type='number' name='${bebida.nombre.toLowerCase()}' value='${tickets[i][bebida.nombre.toLowerCase()] || 0}'><br>`;
+                    })
+
+                    html += `</details>
+                    <details>
+                        <summary>Postres</summary>`;
+                
+                    // Filtrar productos por categoría "Postres"
+                    const postres = productos.filter(producto => producto.categoria === 'Postres');
+                    postres.forEach(postre => {
+                        html += `<label>${postre.nombre}</label>
+                            <input type="number" name="${postre.nombre.toLowerCase()}" value="${tickets[i][postre.nombre.toLowerCase()] || 0}"><br>`;
+                    });
+
+                    html += `</details>
+                            <input type="button" value="Minimizar" onclick="minimizar(${i})">
+                            <input type="button" value="Cerrar cuenta" onclick="cerrarCuenta(${i})">
+                        </form>`;
+                
+                ticket.innerHTML = html;
+                    
                 ticket.querySelectorAll('input[type=number]').forEach(input =>{
                     input.addEventListener('input',()=>{
                         tickets[i][input.name] = input.value;
@@ -85,6 +110,7 @@ menuVentas.addEventListener('click',()=>{
                 const ticket = document.querySelector(`.ticket[data-index="${i}"]`);
                 ticket.classList.toggle('hidden'); //añade o remueve .toggle
             }
+            });
         });
     });
 })
@@ -102,15 +128,28 @@ function cerrarCuenta(index){
     //Logica para cerrar la cuenta y generar un ticket
 }
 
+///////////////////Inventarios
 menuInventarios.addEventListener('click',()=>{
     contenido.innerHTML = ''
-    const plantilla = formulario;
     const contenedorNuevo = document.createElement('div');
-    contenedorNuevo.innerHTML = plantilla;
+    contenedorNuevo.innerHTML = formulario;
     contenido.appendChild(contenedorNuevo);
+
+    const btnAgregar = document.getElementById('btnAgregarProducto');
+    btnAgregar.addEventListener('click', agregarProducto)
 })
 
+
+/////////////////////////Inicio de sesion//////////////
+// Obtener todas las cookies
+const cookies = document.cookie;
+// Verificar si la cookie "login" existe
+if (!cookies.split("; ").some(cookie => cookie.startsWith("login="))) {
+    window.location.replace("../index.html");
+}
+
 function cerrarSesion(){
+    console.log('cerrando');
     document.cookie = "login=true;expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
     window.location.replace("./index.html");  
 }

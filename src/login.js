@@ -8,9 +8,6 @@ function login() {
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
 
-    console.log("Username:", username);  // Verificar si los valores están correctos
-    console.log("Password:", password);
-
     if (username === "" || password === "") {
         Swal.fire("Llena todos los campos")
         return
@@ -18,14 +15,12 @@ function login() {
 
     // Datos a enviar
     const datos = "username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password);
-    console.log('datos enviados: '+datos);
     peticionAjax("POST", "http://localhost:82/proyecto-tacos/src/login.php", document.getElementById("error-message"), datos);
 }
 
 const peticionAjax = (metodo, recurso, dom, datos) => {
     let ajax = new XMLHttpRequest();
     ajax.onreadystatechange = function() {
-        console.log("Estado de la petición: ", this.readyState, " | Código de estado: ", this.status);
         if (this.readyState == 4) {
             if (this.status == 200) {
                 respuestaAjax(this, dom);
@@ -46,7 +41,6 @@ const peticionAjax = (metodo, recurso, dom, datos) => {
 
 function respuestaAjax(ajax, dom) {
     let response = ajax.responseText.trim();
-    console.log(response);
     if (response == "admin") {
         Swal.fire({
             icon: "success",
