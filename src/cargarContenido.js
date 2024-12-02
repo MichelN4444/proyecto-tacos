@@ -27,7 +27,7 @@ menuVentas.addEventListener('click',()=>{
     ///Contenido dinamico
     const mesas = document.querySelectorAll('.mesa');
 
-    fetch('http://localhost:82/proyecto-tacos/src/cargarProductosBd.php')
+    fetch('http://localhost:82/proyecto-tacos/src/cargarProductosBd.php')//?action=cargarProductos
         .then(response => response.json())
         .then(productos => {
 
