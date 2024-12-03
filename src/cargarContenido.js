@@ -2,6 +2,7 @@ import {formulario} from './menuDinamico';
 import { agregarProducto } from './menuDinamico';
 import { tabla } from './menuDinamico';
 import { btnEditarProductos } from './menuDinamico';
+import { registrarVenta } from './venta';
 
 const menuVentas = document.getElementById('ventas');
 const menuInventarios = document.getElementById('inventario');
@@ -27,10 +28,10 @@ menuVentas.addEventListener('click',()=>{
     <button class="mesa" id='mesa2' style="left: 380px; top: 200px;"><img src="./img/mesa.png"></button>
     <button class="mesa" id='mesa3' style="left: 440px; top: 300px;"><img src="./img/mesa.png"></button>
     <button class="mesa" id ='mesa4' style="left: 480px; top: 400px;"><img src="./img/mesa.png"></button>
-    <div>
-    <button class="guardar-btn" onclick="guardarPosiciones()">Guardar Posiciones</button>
-    </div>
     `;
+    // <div>
+    // </div>
+    // <button class="guardar-btn" onclick="guardarPosiciones()">Guardar Posiciones</button>
     const contenedorNuevo = document.createElement('div');
     contenedorNuevo.innerHTML = plantilla;
     contenido.appendChild(contenedorNuevo);
@@ -61,7 +62,7 @@ menuVentas.addEventListener('click',()=>{
                     const tacos = productos.filter(producto => producto.categoria === 'Tacos');
                     tacos.forEach(taco => {
                         html += `<label>${taco.nombre}</label>
-                        <input type="number" name="${taco.nombre.toLowerCase()}" value="${tickets[i][taco.nombre.toLowerCase()] || 0}"><br>`;
+                        <input type="number" name="${taco.nombre.toLowerCase()}" value="${tickets[i][taco.nombre.toLowerCase()] || 0}" min='0'><br>`;
                     });
                     
                     html += `</details>
@@ -71,7 +72,7 @@ menuVentas.addEventListener('click',()=>{
                     const alambres = productos.filter(producto => producto.categoria === 'Alambres');
                     alambres.forEach(alambre => {
                         html += `<label>${alambre.nombre}</label>
-                                <input type="number" name="${alambre.nombre.toLowerCase()}" value="${tickets[i][alambre.nombre.toLowerCase()] || 0}"><br>`;
+                                <input type="number" name="${alambre.nombre.toLowerCase()}" value="${tickets[i][alambre.nombre.toLowerCase()] || 0}" min='0'><br>`;
                             });
                             
                             html += `</details>
@@ -81,7 +82,7 @@ menuVentas.addEventListener('click',()=>{
                             const bebidas = productos.filter(producto => producto.categoria === 'Bebidas');
                             bebidas.forEach(bebida => {
                                 html += `<label>${bebida.nombre}</label>
-                                <input type='number' name='${bebida.nombre.toLowerCase()}' value='${tickets[i][bebida.nombre.toLowerCase()] || 0}'><br>`;
+                                <input type='number' name='${bebida.nombre.toLowerCase()}' value='${tickets[i][bebida.nombre.toLowerCase()] || 0}' min='0'><br>`;
                             });
                             
                             html += `</details>
@@ -91,7 +92,7 @@ menuVentas.addEventListener('click',()=>{
                             const postres = productos.filter(producto => producto.categoria === 'Postres');
                             postres.forEach(postre => {
                                 html += `<label>${postre.nombre}</label>
-                                <input type="number" name="${postre.nombre.toLowerCase()}" value="${tickets[i][postre.nombre.toLowerCase()] || 0}"><br>`;
+                                <input type="number" name="${postre.nombre.toLowerCase()}" value="${tickets[i][postre.nombre.toLowerCase()] || 0}" min='0'><br>`;
                             });
                             
                             html += `</details>
@@ -123,14 +124,14 @@ menuVentas.addEventListener('click',()=>{
             ticket.classList.add('hidden');
         }
     }
-    
     window.minimizar = minimizar;//Hacerlo visible
     
     function cerrarCuenta(index){
-        const ticket = tickets[index];
-        console.log(ticket);
-    //Logica para cerrar la cuenta y generar un ticket
-}
+        const venta = tickets[index];
+        registrarVenta(venta);
+        
+    }
+    window.cerrarCuenta = cerrarCuenta;
 
 ///////////////////Inventarios////////////////////
 menuInventarios.addEventListener('click',()=>{

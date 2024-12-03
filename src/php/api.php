@@ -29,6 +29,9 @@ switch ($action) {
     case 'eliminarProducto':
         eliminarProducto();
         break;
+    case 'registrarVenta':
+        registrarVenta();
+        break;
     default:
         echo json_encode(['error' => 'Invalid action']);
         break;
@@ -147,6 +150,38 @@ function eliminarProducto() {
     $conn->close();
 }
 
+function registrarVenta(){
+    global $conn;
+    $json = file_get_contents('php://input'); // Captura el cuerpo de la solicitud
+    $data = json_decode($json, true); // Convierte JSON a array asociativo
+
+    if ($data === null) {
+        echo json_encode(['error' => 'JSON mal formado']);
+        exit;
+    }
+
+    $consulta = $conn -> prepare("INSERT INTO ventas (producto, cantidad) VALUES (?, ?)");
+
+    if (!$consulta) {
+        echo json_encode(['error' => 'Error al preparar la consulta']);
+        exit;
+    }
+
+    foreach ($data as $producto => $cantidad) {
+        $consulta->bind_param("si", $producto, $cantidad); // "s" para string, "i" para entero
+        if (!$consulta->execute()) {
+            echo json_encode(['error' => 'Error al insertar los datos', 'producto' => $producto]);
+            exit;
+        }
+    }
+
+    // Respuesta exitosa
+    echo json_encode(['success' => 'Datos registrados correctamente']);
+
+    // Cerrar conexiones
+    $consulta->close();
+    $conn->close();
+}
 
 /* Función para generar un reporte de ventas
 function obtenerReporteVentas() {
