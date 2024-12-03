@@ -15,7 +15,7 @@ if (!$action) {
 
 switch ($action) {
     case 'obtenerProductos':
-        getProducts();
+        obtenerProductos();
         break;
     case 'cargarProductos':
         cargarProductos();
@@ -23,9 +23,9 @@ switch ($action) {
     case 'insertarProductos':
         insertarProductos();
         break;
-    case 'updateInventory':
-        updateInventory();
-        break;
+    // case 'updateInventory':
+    //     updateInventory();
+    //     break;
     default:
         echo json_encode(['error' => 'Invalid action']);
         break;
@@ -49,6 +49,7 @@ function obtenerProductos() {
 }
 
 function cargarProductos(){
+    global $conn;
     // Consultar los productos
     $sql = "SELECT nombre, categoria, precio FROM productos";
     $result = $conn->query($sql);
@@ -68,6 +69,7 @@ function cargarProductos(){
 }
 
 function insertarProductos(){
+    global $conn;
     // Obtener datos del formulario
     $nombre = $_POST['nombre'] ?? '';
     $precio = $_POST['precio'] ?? 0;

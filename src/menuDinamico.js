@@ -81,7 +81,7 @@ export const agregarProducto = () =>{
 
     // Enviar los datos por AJAX
     const xhr = new XMLHttpRequest();
-    xhr.open("POST", "http://localhost:82/proyecto-tacos/src/menuProductos.php", true);//?action=insertarProductos
+    xhr.open("POST", "http://localhost:82/proyecto-tacos/src/api.php?action=insertarProductos", true);//?action=insertarProductos
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
     
     xhr.onreadystatechange = function () {

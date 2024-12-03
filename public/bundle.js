@@ -16,6 +16,18 @@ const formulario = `
         <input type="number" id="precioProducto" name="precio" placeholder="Precio del producto" min="0" required><br>
         <button type="button" id="btnAgregarProducto">Agregar producto</button>
     </form>
+    <table id="productosTabla">
+        <tr>
+            <th>Nombre del producto</th>
+            <th>Categoria</th>
+            <th>Precio</th>
+            <th>Modificar</th>
+        </tr>
+        <tbody>
+        </tbody>
+    </table>
+    <button id="editarSeleccionados">Editar seleccionados</button>
+
     <form>
         <br><h1>Modificar productos</h1>
         <label>Introduce el nombre:</label>
@@ -23,7 +35,26 @@ const formulario = `
         <button type="button" id="btnBuscarProducto">Agregar producto</button>
     </form>
 `;
+//Llenar tabla
+fetch('http://localhost/proyecto-tacos/api.php?action=obtenerProductos')//vamos a unificar mis php
+    .then(response => response.json())
+    .then(data => {
+        const llenarTabla = document.querySelector('#productosTabla tbody');
+        llenarTabla.innerHTML = ''; // Limpia la tabla
 
+        data.forEach(producto => {
+            const fila = document.createElement('tr');
+            fila.innerHTML = `
+                <td>${producto.nombre}</td>
+                <td>${producto.categoria}</td>
+                <td>${producto.precio}</td>
+                <td><input class="seleccionar" type="checkbox" value="${producto.id}"></td>
+            `;
+            llenarTabla.appendChild(fila);
+        });
+    })
+    .catch(error => console.error('Error:', error));
+//En el html de arriba colocar la tabla en donde se verán los productos que tenemos, podemos tambien hacer las categorias dinamicas
 const agregarProducto = () =>{
     const categoria = document.getElementById("categoriaProducto").value.trim();
     const nombre = document.getElementById("nombreProducto").value.trim();
@@ -40,7 +71,7 @@ const agregarProducto = () =>{
 
     // Enviar los datos por AJAX
     const xhr = new XMLHttpRequest();
-    xhr.open("POST", "http://localhost:82/proyecto-tacos/src/menuProductos.php", true);
+    xhr.open("POST", "http://localhost:82/proyecto-tacos/src/api.php?action=insertarProductos", true);//?action=insertarProductos
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
     
     xhr.onreadystatechange = function () {
@@ -85,7 +116,7 @@ menuVentas.addEventListener('click',()=>{
     ///Contenido dinamico
     const mesas = document.querySelectorAll('.mesa');
 
-    fetch('http://localhost:82/proyecto-tacos/src/cargarProductosBd.php')
+    fetch('http://localhost:82/proyecto-tacos/src/api.php?action=cargarProductos')//cargarProductosBd.php
         .then(response => response.json())
         .then(productos => {
 
