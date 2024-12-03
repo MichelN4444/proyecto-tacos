@@ -241,3 +241,8 @@ header img {
 .hidden {
     display: none;
 }
+
+
+#productosTabla{
+    width: 100%;
+}

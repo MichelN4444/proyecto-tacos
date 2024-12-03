@@ -14,6 +14,8 @@ export const formulario = `
         <input type="number" id="precioProducto" name="precio" placeholder="Precio del producto" min="0" required><br>
         <button type="button" id="btnAgregarProducto">Agregar producto</button>
     </form>
+    
+    <br><h1>Modificar productos</h1>
     <div class="table-contenedor">
         <table id="productosTabla" border='1'>
             <tr>
@@ -21,19 +23,13 @@ export const formulario = `
                 <th>Categoria</th>
                 <th>Precio</th>
                 <th>Modificar</th>
+                <th>Visible en el menú</th>
             </tr>
             <tbody>
             </tbody>
         </table>
     </div>
     <button id="editarSeleccionados">Editar seleccionados</button>
-
-    <form>
-        <br><h1>Modificar productos</h1>
-        <label>Introduce el nombre:</label>
-        <input type='text' id="buscarProducto" name="nombre" placeholder='Nombre del producto' required><br>
-        <button type="button" id="btnBuscarProducto">Agregar producto</button>
-    </form>
 `;
 //Llenar tabla
 export const tabla = () => {

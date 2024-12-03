@@ -16,6 +16,8 @@ const formulario = `
         <input type="number" id="precioProducto" name="precio" placeholder="Precio del producto" min="0" required><br>
         <button type="button" id="btnAgregarProducto">Agregar producto</button>
     </form>
+    
+    <br><h1>Modificar productos</h1>
     <div class="table-contenedor">
         <table id="productosTabla" border='1'>
             <tr>
@@ -23,20 +25,37 @@ const formulario = `
                 <th>Categoria</th>
                 <th>Precio</th>
                 <th>Modificar</th>
+                <th>Visible en el menú</th>
             </tr>
             <tbody>
             </tbody>
         </table>
     </div>
     <button id="editarSeleccionados">Editar seleccionados</button>
-
-    <form>
-        <br><h1>Modificar productos</h1>
-        <label>Introduce el nombre:</label>
-        <input type='text' id="buscarProducto" name="nombre" placeholder='Nombre del producto' required><br>
-        <button type="button" id="btnBuscarProducto">Agregar producto</button>
-    </form>
 `;
+//Llenar tabla
+const tabla = () => {
+    fetch('./src/php/api.php?action=obtenerProductos')
+    .then(response => response.json())
+    .then(data => {
+        console.log('aqui');
+        const llenarTabla = document.querySelector('#productosTabla tbody');
+        llenarTabla.innerHTML = ''; 
+
+        data.forEach(producto => {
+            const fila = document.createElement('tr');
+            fila.innerHTML = `
+                <td>${producto.nombre}</td>
+                <td>${producto.categoria}</td>
+                <td>${producto.precio}</td>
+                <td><input class="seleccionar" type="checkbox" value="${producto.id}"></td>
+            `;
+            llenarTabla.appendChild(fila);
+        });
+    })
+    .catch(error => console.error('Error:', error));
+   //Aqui va
+};
 //En el html de arriba colocar la tabla en donde se verán los productos que tenemos, podemos tambien hacer las categorias dinamicas
 const agregarProducto = () =>{
     const categoria = document.getElementById("categoriaProducto").value.trim();
@@ -202,7 +221,7 @@ menuInventarios.addEventListener('click',()=>{
     const contenedorNuevo = document.createElement('div');
     contenedorNuevo.innerHTML = formulario;
     contenido.appendChild(contenedorNuevo);
-    
+    tabla();
     const btnAgregar = document.getElementById('btnAgregarProducto');
     btnAgregar.addEventListener('click', agregarProducto);
 });

@@ -137,7 +137,7 @@ menuInventarios.addEventListener('click',()=>{
     const contenedorNuevo = document.createElement('div');
     contenedorNuevo.innerHTML = formulario;
     contenido.appendChild(contenedorNuevo);
-    
+    tabla();
     const btnAgregar = document.getElementById('btnAgregarProducto');
     btnAgregar.addEventListener('click', agregarProducto)
 })
