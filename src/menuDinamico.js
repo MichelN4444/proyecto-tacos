@@ -14,17 +14,19 @@ export const formulario = `
         <input type="number" id="precioProducto" name="precio" placeholder="Precio del producto" min="0" required><br>
         <button type="button" id="btnAgregarProducto">Agregar producto</button>
     </form>
-    
+
     <br><h1>Modificar productos</h1>
     <div class="table-contenedor">
         <table id="productosTabla" border='1'>
-            <tr>
-                <th>Nombre del producto</th>
-                <th>Categoria</th>
-                <th>Precio</th>
-                <th>Modificar</th>
-                <th>Visible en el menú</th>
-            </tr>
+            <thead>
+                <tr>
+                    <th>Nombre del producto</th>
+                    <th>Categoria</th>
+                    <th>Precio</th>
+                    <th>Modificar</th>
+                    <th>Visible en el menú</th>
+                </tr>
+            </thead>
             <tbody>
             </tbody>
         </table>
@@ -36,7 +38,6 @@ export const tabla = () => {
     fetch('./src/php/api.php?action=obtenerProductos')
     .then(response => response.json())
     .then(data => {
-        console.log('aqui');
         const llenarTabla = document.querySelector('#productosTabla tbody');
         llenarTabla.innerHTML = ''; 
 
@@ -45,8 +46,8 @@ export const tabla = () => {
             fila.innerHTML = `
                 <td>${producto.nombre}</td>
                 <td>${producto.categoria}</td>
-                <td>${producto.precio}</td>
-                <td><input class="seleccionar" type="checkbox" value="${producto.id}"></td>
+                <td>$${producto.precio}</td>
+                <td><input class="seleccionar" type="checkbox" value="${producto.id}" data-info='${producto.nombre}'></td>
             `;
             llenarTabla.appendChild(fila);
         });
@@ -55,15 +56,102 @@ export const tabla = () => {
    //Aqui va
 }
 
-export const btnEditarProductos = () =>{
+export const btnEditarProductos = (contenedorEditar) =>{
     document.getElementById('editarSeleccionados').addEventListener('click' ,()=>{
         const seleccionados = document.querySelectorAll('.seleccionar:checked');
         const ids = Array.from(seleccionados).map(checkbox => checkbox.value);
-        if(ids.lenght === 0){
-            alert('selecciona al menos uno');
+        const nombres = Array.from(seleccionados).map(checkbox => checkbox.dataset.info)
+
+        if(seleccionados.length == 0){
+            Swal.fire("Selecciona al menos un producto!");
             return;
         }
-        //Aqui se crea un formulario para editar o elimar 
+        //Aqui se crea un formulario para editar o elimar
+        let html = '<form id="editarFormulario">';
+        
+        ids.forEach((id, i) => {
+                html += `
+                    <br><label>Producto: ${nombres[i]}</label>
+                    <input type="text" name="nombre_${id}" placeholder="Nuevo nombre">
+                    <input type="number" name="precio_${id}" placeholder="Nuevo precio">
+                    <input type="text" name="categoria_${id}" placeholder="Nueva categoría">
+                    <button type="button" class='btnEliminar' data-id="${id}">Eliminar producto</button></form>
+                `;
+        });
+    html += `<button type="submit">Guardar cambios</button></form>`;
+    contenedorEditar.innerHTML = html;
+    // Manejar la edición y guardar en la BD
+
+    document.querySelectorAll('.btnEliminar').forEach(btn =>{
+        btn.addEventListener('click', (e)=>{
+            const id = e.target.getAttribute('data-id'); // Obtener el ID del producto
+    
+            // Confirmar antes de eliminar
+            Swal.fire({
+                title: "¿Estás seguro?",
+                text: "No podras revertirlo!",
+                icon: "Atencion",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                cancelButtonText: 'Cancelar',
+                confirmButtonText: "Sí, eliminarlo!"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`http://localhost:82/proyecto-tacos/src/php/api.php?action=eliminarProducto&id=${id}`, {
+                        method: 'POST'
+                    })
+                    .then(response => response.json())
+                    .then(result => {
+                    if (result.success) {
+                        Swal.fire({
+                            title: "Eliminado!",
+                            text: "El producto fue eliminado.",
+                            icon: "success"
+                        });
+                        location.reload(); // Recargar la tabla para reflejar los cambios
+                    } else {
+                        Swal.fire({
+                            title: "Ha ocurrido un error",
+                            showClass: {
+                            popup: `
+                                animate__animated
+                                animate__fadeInUp
+                                animate__faster
+                            `
+                            },
+                            hideClass: {
+                            popup: `
+                                animate__animated
+                                animate__fadeOutDown
+                                animate__faster
+                            `
+                            }
+                        });
+                    }
+                })
+                }
+            });
+        })
+    })
+    document.querySelector('#editarFormulario').addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const formData = new FormData(e.target);
+        fetch('http://localhost:82/proyecto-tacos/src/php/api.php?action=editarProductos', {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    alert('Productos actualizados');
+                    location.reload(); // Recargar la tabla
+                } else {
+                    alert('Error al actualizar los productos');
+                }
+            });
+    });
     })
 }
 //En el html de arriba colocar la tabla en donde se verán los productos que tenemos, podemos tambien hacer las categorias dinamicas
@@ -93,6 +181,9 @@ export const agregarProducto = () =>{
                 Swal.fire(xhr.responseText);
                 // Limpiar campos si se agregó correctamente
                 document.getElementById("formAgregarProducto").reset();
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
             } else {
                 console.log("Error en la solicitud:", xhr.status, xhr.responseText);
                 Swal.fire("Error al agregar el producto. Intenta nuevamente.");

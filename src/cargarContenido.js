@@ -1,6 +1,7 @@
 import {formulario} from './menuDinamico';
 import { agregarProducto } from './menuDinamico';
 import { tabla } from './menuDinamico';
+import { btnEditarProductos } from './menuDinamico';
 
 const menuVentas = document.getElementById('ventas');
 const menuInventarios = document.getElementById('inventario');
@@ -133,13 +134,19 @@ menuVentas.addEventListener('click',()=>{
 
 ///////////////////Inventarios////////////////////
 menuInventarios.addEventListener('click',()=>{
+    console.log('hola');
     contenido.innerHTML = ''
     const contenedorNuevo = document.createElement('div');
+    // contenedorNuevo.id = 'contenedorInventarios';
     contenedorNuevo.innerHTML = formulario;
     contenido.appendChild(contenedorNuevo);
     tabla();
     const btnAgregar = document.getElementById('btnAgregarProducto');
     btnAgregar.addEventListener('click', agregarProducto)
+    const contenedorEditar= document.createElement('div');
+    btnEditarProductos(contenedorEditar);
+    
+    contenido.appendChild(contenedorEditar);
 })
 
 

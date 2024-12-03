@@ -23,9 +23,12 @@ switch ($action) {
     case 'insertarProductos':
         insertarProductos();
         break;
-    // case 'updateInventory':
-    //     updateInventory();
-    //     break;
+    case 'editarProductos':
+        editarProductos();
+        break;
+    case 'eliminarProducto':
+        eliminarProducto();
+        break;
     default:
         echo json_encode(['error' => 'Invalid action']);
         break;
@@ -95,6 +98,55 @@ function insertarProductos(){
     $stmt->close();
     $conn->close();                
 }
+
+function editarProductos(){
+    $productos = $_POST;
+    foreach ($productos as $key => $value) {
+        global $conn;
+        // Extraer ID del nombre del campo (e.g., "nombre_1" -> ID: 1)
+        preg_match('/_(\d+)$/', $key, $matches);
+        if (isset($matches[1])) {
+            $id = $matches[1];
+            $campo = strtok($key, '_'); // Campo: nombre, precio, categoría
+            $valor = $value;
+        // Si el valor está vacío, no actualizamos el campo
+        if (!empty($valor)) {
+            $sql = "UPDATE productos SET $campo = ? WHERE id = ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("si", $valor, $id);
+            $stmt->execute();
+            }
+        }
+    }
+    
+    echo json_encode(['success' => 'Productos actualizados correctamente']);
+}
+
+function eliminarProducto() {
+    global $conn;
+
+    $id = $_GET['id'] ?? null;
+
+    if (!$id) {
+        echo json_encode(['error' => 'ID del producto no proporcionado']);
+        exit;
+    }
+
+    // Preparar la consulta para eliminar el producto
+    $sql = "DELETE FROM productos WHERE id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $id);
+
+    if ($stmt->execute()) {
+        echo json_encode(['success' => 'Producto eliminado correctamente']);
+    } else {
+        echo json_encode(['error' => 'Error al eliminar el producto']);
+    }
+
+    $stmt->close();
+    $conn->close();
+}
+
 
 /* Función para generar un reporte de ventas
 function obtenerReporteVentas() {

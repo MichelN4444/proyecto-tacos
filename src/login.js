@@ -60,7 +60,7 @@ function respuestaAjax(ajax, dom) {
 
         setTimeout(() => {
             window.location.replace("http://localhost:82/proyecto-tacos/menu.html");//se creara otro
-        }, 2000);
+        }, 1000);
     }else{
         Swal.fire({
             icon: "error",

@@ -244,5 +244,14 @@ header img {
 
 
 #productosTabla{
-    width: 100%;
+    width: 60%;
+    text-align: center;
+}
+
+button{
+    background-color: rgb(33, 85, 255);
+    color: #fff;
+    margin-top: .5%;
+    border-radius: 7px;
+    border-color: rgb(33, 85, 255);
 }
