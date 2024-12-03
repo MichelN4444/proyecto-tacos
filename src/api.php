@@ -20,9 +20,6 @@ switch ($action) {
     case 'cargarProductos':
         cargarProductos();
         break;
-    case 'getSalesReport':
-        getSalesReport();
-        break;
     case 'insertarProductos':
         insertarProductos();
         break;
@@ -71,7 +68,30 @@ function cargarProductos(){
 }
 
 function insertarProductos(){
+    // Obtener datos del formulario
+    $nombre = $_POST['nombre'] ?? '';
+    $precio = $_POST['precio'] ?? 0;
+    $categoria = $_POST['categoria'] ?? '';
 
+    // Validar datos
+    if (empty($nombre) || empty($precio) || empty($categoria)) {
+        echo "Por favor, completa todos los campos obligatorios.";
+            exit;
+    }
+
+    // Insertar el producto en la base de datos
+    $sql = "INSERT INTO productos (nombre, precio, categoria) VALUES (?, ?, ?)";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("sds", $nombre, $precio, $categoria);
+
+    if ($stmt->execute()) {
+        echo "Producto agregado exitosamente.";
+    } else {
+        echo "Error al agregar el producto: " . $conn->error;
+    }
+
+    $stmt->close();
+    $conn->close();                
 }
 
 /* Función para generar un reporte de ventas

@@ -19,10 +19,13 @@ export const formulario = `
             <th>Nombre del producto</th>
             <th>Categoria</th>
             <th>Precio</th>
+            <th>Modificar</th>
         </tr>
         <tbody>
         </tbody>
     </table>
+    <button id="editarSeleccionados">Editar seleccionados</button>
+
     <form>
         <br><h1>Modificar productos</h1>
         <label>Introduce el nombre:</label>
@@ -43,12 +46,24 @@ fetch('http://localhost/proyecto-tacos/api.php?action=obtenerProductos')//vamos 
                 <td>${producto.nombre}</td>
                 <td>${producto.categoria}</td>
                 <td>${producto.precio}</td>
+                <td><input class="seleccionar" type="checkbox" value="${producto.id}"></td>
             `;
             llenarTabla.appendChild(fila);
         });
     })
     .catch(error => console.error('Error:', error));
-
+   //Aqui va
+export const btnEditarProductos = () =>{
+    document.getElementById('editarSeleccionados').addEventListener('click' ,()=>{
+        const seleccionados = document.querySelectorAll('.seleccionar:checked');
+        const ids = Array.from(seleccionados).map(checkbox => checkbox.value);
+        if(ids.lenght === 0){
+            alert('selecciona al menos uno');
+            return;
+        }
+        //Aqui se crea un formulario para editar o elimar 
+    })
+}
 //En el html de arriba colocar la tabla en donde se verán los productos que tenemos, podemos tambien hacer las categorias dinamicas
 export const agregarProducto = () =>{
     const categoria = document.getElementById("categoriaProducto").value.trim();
