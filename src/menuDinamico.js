@@ -14,16 +14,18 @@ export const formulario = `
         <input type="number" id="precioProducto" name="precio" placeholder="Precio del producto" min="0" required><br>
         <button type="button" id="btnAgregarProducto">Agregar producto</button>
     </form>
-    <table id="productosTabla">
-        <tr>
-            <th>Nombre del producto</th>
-            <th>Categoria</th>
-            <th>Precio</th>
-            <th>Modificar</th>
-        </tr>
-        <tbody>
-        </tbody>
-    </table>
+    <div class="table-contenedor">
+        <table id="productosTabla" border='1'>
+            <tr>
+                <th>Nombre del producto</th>
+                <th>Categoria</th>
+                <th>Precio</th>
+                <th>Modificar</th>
+            </tr>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
     <button id="editarSeleccionados">Editar seleccionados</button>
 
     <form>
@@ -34,11 +36,13 @@ export const formulario = `
     </form>
 `;
 //Llenar tabla
-fetch('http://localhost/proyecto-tacos/api.php?action=obtenerProductos')//vamos a unificar mis php
+export const tabla = () => {
+    fetch('./src/php/api.php?action=obtenerProductos')
     .then(response => response.json())
     .then(data => {
+        console.log('aqui');
         const llenarTabla = document.querySelector('#productosTabla tbody');
-        llenarTabla.innerHTML = ''; // Limpia la tabla
+        llenarTabla.innerHTML = ''; 
 
         data.forEach(producto => {
             const fila = document.createElement('tr');
@@ -53,6 +57,8 @@ fetch('http://localhost/proyecto-tacos/api.php?action=obtenerProductos')//vamos 
     })
     .catch(error => console.error('Error:', error));
    //Aqui va
+}
+
 export const btnEditarProductos = () =>{
     document.getElementById('editarSeleccionados').addEventListener('click' ,()=>{
         const seleccionados = document.querySelectorAll('.seleccionar:checked');
@@ -81,7 +87,7 @@ export const agregarProducto = () =>{
 
     // Enviar los datos por AJAX
     const xhr = new XMLHttpRequest();
-    xhr.open("POST", "http://localhost:82/proyecto-tacos/src/api.php?action=insertarProductos", true);//?action=insertarProductos
+    xhr.open("POST", "./src/php/api.php?action=insertarProductos", true);//?action=insertarProductos
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
     
     xhr.onreadystatechange = function () {

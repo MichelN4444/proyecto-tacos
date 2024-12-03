@@ -4,7 +4,7 @@ header('Access-Control-Allow-Origin: *');
 // Configuración de la base de datos
 $servername = "localhost";
 $username_db = "root";
-$password_db = "admin";
+$password_db = "";
 $dbname = "taqueria";
 
 // Crear la conexión

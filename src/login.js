@@ -15,7 +15,7 @@ function login() {
 
     // Datos a enviar
     const datos = "username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password);
-    peticionAjax("POST", "http://localhost:82/proyecto-tacos/src/login.php", document.getElementById("error-message"), datos);
+    peticionAjax("POST", "./src/php/login2.php", document.getElementById("error-message"), datos);
 }
 
 const peticionAjax = (metodo, recurso, dom, datos) => {
@@ -49,7 +49,7 @@ function respuestaAjax(ajax, dom) {
         sessionStorage.setItem("isLoggedIn", "true");
 
         setTimeout(function() {
-            window.location.replace("http://localhost:82/proyecto-tacos/menu.html");
+            window.location.replace("./menu.html");
         }, 2000);
     } else if(response == 'usuario') {
         Swal.fire({
@@ -59,7 +59,7 @@ function respuestaAjax(ajax, dom) {
         sessionStorage.setItem("isLoggedIn", "true");
 
         setTimeout(() => {
-            window.location.replace("http://localhost:82/proyecto-tacos/menu.html");
+            window.location.replace("http://localhost:82/proyecto-tacos/menu.html");//se creara otro
         }, 2000);
     }else{
         Swal.fire({
