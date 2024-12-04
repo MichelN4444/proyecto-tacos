@@ -195,23 +195,43 @@ const agregarProducto = () =>{
     xhr.send(datos);
 };
 
-const registrarVenta = (venta) =>{
-    venta = JSON.stringify(venta);
-    console.log(venta);
-
-    fetch('./src/php/api.php?action=registrarVenta',{
-        method: 'POST',
-        headers:{
-            'Content-type': 'application/json'
-        },
-        body: venta
-    })
-    .then(response => response.json())
-    .then(result => {
-        console.log('respuesta del server', result);
-    })
-    .catch(error => console.log('error:', error));
-};
+function registrarVenta(venta) {
+    Swal.fire({
+        title: "Estas seguro?",
+        text: "No podras cancelar la venta despues!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        cancelButtonText: 'Cancelar',
+        confirmButtonText: "Sí, registrar!"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch('./src/php/api.php?action=registrarVenta', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: venta // Aquí se pasa el JSON generado
+            })
+            .then(response => response.json()) // Procesar la respuesta JSON del servidor
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: "Registrada!",
+                        text: "Venta registrada con exito!",
+                        icon: "success"
+                    });
+                } else {
+                    console.error('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error al registrar la venta:', error);
+            });
+        }
+    });
+}
 
 const menuVentas = document.getElementById('ventas');
 const menuInventarios = document.getElementById('inventario');
@@ -325,6 +345,36 @@ menuVentas.addEventListener('click',()=>{
                     
                 });
             });
+            function cerrarCuenta(index){
+                const ticket = document.querySelector(`.ticket[data-index="${index}"]`);//Los editados
+                const form = ticket.querySelector('form');
+
+                const productosVenta = [];
+        
+                form.querySelectorAll('input[type="number"]').forEach(input => {
+                    const productoNombre = input.name;
+                    const cantidad = parseInt(input.value, 10);
+            
+                    // Buscar el producto en el array de productos (suponiendo que tienes un array 'productos')
+                    const producto = productos.find(p => p.nombre.toLowerCase() === productoNombre.toLowerCase());
+            
+                    if (producto && cantidad != 0) {
+                        productosVenta.push({
+                            producto_id: producto.id, // Producto id
+                            nombre: productoNombre,
+                            cantidad: cantidad, // Cantidad modificada
+                            precio: producto.precio // Precio del producto
+                        });
+                    }
+                });
+                const venta = JSON.stringify(productosVenta);
+                registrarVenta(venta);
+                form.querySelectorAll('input[type="number"]').forEach(input =>{
+                    input.value = 0;
+                });
+                minimizar(index);
+            }
+            window.cerrarCuenta = cerrarCuenta;
         });
     });
     
@@ -335,17 +385,9 @@ menuVentas.addEventListener('click',()=>{
         }
     }
     window.minimizar = minimizar;//Hacerlo visible
-    
-    function cerrarCuenta(index){
-        const venta = tickets[index];
-        registrarVenta(venta);
-        
-    }
-    window.cerrarCuenta = cerrarCuenta;
 
 ///////////////////Inventarios////////////////////
 menuInventarios.addEventListener('click',()=>{
-    console.log('hola');
     contenido.innerHTML = '';
     const contenedorNuevo = document.createElement('div');
     // contenedorNuevo.id = 'contenedorInventarios';

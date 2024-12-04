@@ -4,7 +4,7 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST');
 header('Access-Control-Allow-Headers: Content-Type');
 
-require_once 'conexion.php'; // Colocar link de conexion
+require_once 'conexion.php';
 
 $action = $_GET['action'] ?? null; // Detecta la acción
 
@@ -37,7 +37,6 @@ switch ($action) {
         break;
 }
 
-// Función para obtener productos
 function obtenerProductos() {
     global $conn;
     $query = "SELECT * FROM productos";
@@ -56,11 +55,9 @@ function obtenerProductos() {
 
 function cargarProductos(){
     global $conn;
-    // Consultar los productos
-    $sql = "SELECT nombre, categoria, precio FROM productos";
+    $sql = "SELECT nombre, categoria, precio, id FROM productos";
     $result = $conn->query($sql);
 
-    // Almacenar los productos en un array
     $productos = [];
     if ($result->num_rows > 0) {
         while($row = $result->fetch_assoc()) {
@@ -68,7 +65,6 @@ function cargarProductos(){
         }
     }
 
-    // Devolver los productos como JSON
     echo json_encode($productos);
 
     $conn->close();
@@ -76,18 +72,15 @@ function cargarProductos(){
 
 function insertarProductos(){
     global $conn;
-    // Obtener datos del formulario
     $nombre = $_POST['nombre'] ?? '';
     $precio = $_POST['precio'] ?? 0;
     $categoria = $_POST['categoria'] ?? '';
 
-    // Validar datos
     if (empty($nombre) || empty($precio) || empty($categoria)) {
         echo "Por favor, completa todos los campos obligatorios.";
             exit;
     }
 
-    // Insertar el producto en la base de datos
     $sql = "INSERT INTO productos (nombre, precio, categoria) VALUES (?, ?, ?)";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("sds", $nombre, $precio, $categoria);
@@ -110,9 +103,9 @@ function editarProductos(){
         preg_match('/_(\d+)$/', $key, $matches);
         if (isset($matches[1])) {
             $id = $matches[1];
-            $campo = strtok($key, '_'); // Campo: nombre, precio, categoría
+            $campo = strtok($key, '_'); 
             $valor = $value;
-        // Si el valor está vacío, no actualizamos el campo
+
         if (!empty($valor)) {
             $sql = "UPDATE productos SET $campo = ? WHERE id = ?";
             $stmt = $conn->prepare($sql);
@@ -135,7 +128,6 @@ function eliminarProducto() {
         exit;
     }
 
-    // Preparar la consulta para eliminar el producto
     $sql = "DELETE FROM productos WHERE id = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $id);
@@ -150,70 +142,51 @@ function eliminarProducto() {
     $conn->close();
 }
 
-function registrarVenta(){
+function registrarVenta() {
     global $conn;
-    $json = file_get_contents('php://input'); // Captura el cuerpo de la solicitud
-    $data = json_decode($json, true); // Convierte JSON a array asociativo
-
+    
+    $json = file_get_contents('php://input');
+    $data = json_decode($json, true);
+    
     if ($data === null) {
         echo json_encode(['error' => 'JSON mal formado']);
         exit;
     }
+    
+    // Obtener el último `venta_id` insertado
+    $consulta = $conn->prepare("SELECT MAX(venta_id) AS max_venta_id FROM ventas");
+    $consulta->execute();
+    $resultado = $consulta->get_result();
+    $row = $resultado->fetch_assoc();
 
-    $consulta = $conn -> prepare("INSERT INTO ventas (producto, cantidad) VALUES (?, ?)");
+    $venta_id = $row['max_venta_id'] ? $row['max_venta_id'] + 1 : 1;
+    
+    // Iniciar una transacción para asegurar la consistencia
+    $conn->begin_transaction();
 
-    if (!$consulta) {
-        echo json_encode(['error' => 'Error al preparar la consulta']);
-        exit;
-    }
+    try {
+        $consulta = $conn->prepare("INSERT INTO ventas (producto_id, cantidad, precio, venta_id) VALUES (?, ?, ?, ?)");
 
-    foreach ($data as $producto => $cantidad) {
-        $consulta->bind_param("si", $producto, $cantidad); // "s" para string, "i" para entero
-        if (!$consulta->execute()) {
-            echo json_encode(['error' => 'Error al insertar los datos', 'producto' => $producto]);
-            exit;
+        foreach ($data as $venta) {
+            $producto_id = $venta['producto_id'];
+            $cantidad = $venta['cantidad'];
+            $precio = $venta['precio'];
+            
+            $consulta->bind_param("iiid", $producto_id, $cantidad, $precio, $venta_id);
+            if (!$consulta->execute()) {
+                throw new Exception("Error al insertar la venta para el producto_id: " . $producto_id);
+            }
         }
+
+        $conn->commit();
+        echo json_encode(['success' => 'Ventas registradas correctamente']);
+    } catch (Exception $e) {
+
+        $conn->rollback();
+        echo json_encode(['error' => $e->getMessage()]);
     }
-
-    // Respuesta exitosa
-    echo json_encode(['success' => 'Datos registrados correctamente']);
-
-    // Cerrar conexiones
+    
     $consulta->close();
     $conn->close();
 }
-
-/* Función para generar un reporte de ventas
-function obtenerReporteVentas() {
-    global $conn;
-    $query = "SELECT producto, SUM(cantidad) as total_vendido FROM ventas GROUP BY producto";
-    $result = $conn->query($query);
-
-    if ($result->num_rows > 0) {
-        $report = [];
-        while ($row = $result->fetch_assoc()) {
-            $report[] = $row;
-        }
-        echo json_encode($report);
-    } else {
-        echo json_encode([]);
-    }
-}
-*/
-
-/* Función para actualizar el inventario
-function updateInventory() {
-    global $conn;
-    $data = json_decode(file_get_contents("php://input"), true);
-    
-    foreach ($data as $item) {
-        $id = $conn->real_escape_string($item['id']);
-        $cantidad = $conn->real_escape_string($item['cantidad']);
-        $query = "UPDATE inventario SET cantidad = '$cantidad' WHERE id = '$id'";
-        $conn->query($query);
-    }
-
-    echo json_encode(['success' => true]);
-}
-*/
 ?>
