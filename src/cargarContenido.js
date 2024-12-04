@@ -115,6 +115,36 @@ menuVentas.addEventListener('click',()=>{
                     
                 });
             });
+            function cerrarCuenta(index){
+                const ticket = document.querySelector(`.ticket[data-index="${index}"]`);//Los editados
+                const form = ticket.querySelector('form')
+
+                const productosVenta = [];
+        
+                form.querySelectorAll('input[type="number"]').forEach(input => {
+                    const productoNombre = input.name;
+                    const cantidad = parseInt(input.value, 10);
+            
+                    // Buscar el producto en el array de productos (suponiendo que tienes un array 'productos')
+                    const producto = productos.find(p => p.nombre.toLowerCase() === productoNombre.toLowerCase());
+            
+                    if (producto && cantidad != 0) {
+                        productosVenta.push({
+                            producto_id: producto.id, // Producto id
+                            nombre: productoNombre,
+                            cantidad: cantidad, // Cantidad modificada
+                            precio: producto.precio // Precio del producto
+                        });
+                    }
+                });
+                const venta = JSON.stringify(productosVenta);
+                registrarVenta(venta);
+                form.querySelectorAll('input[type="number"]').forEach(input =>{
+                    input.value = 0;
+                })
+                minimizar(index);
+            }
+            window.cerrarCuenta = cerrarCuenta;
         });
     });
     
@@ -125,17 +155,9 @@ menuVentas.addEventListener('click',()=>{
         }
     }
     window.minimizar = minimizar;//Hacerlo visible
-    
-    function cerrarCuenta(index){
-        const venta = tickets[index];
-        registrarVenta(venta);
-        
-    }
-    window.cerrarCuenta = cerrarCuenta;
 
 ///////////////////Inventarios////////////////////
 menuInventarios.addEventListener('click',()=>{
-    console.log('hola');
     contenido.innerHTML = ''
     const contenedorNuevo = document.createElement('div');
     // contenedorNuevo.id = 'contenedorInventarios';

@@ -1,17 +1,37 @@
-export const registrarVenta = (venta) =>{
-    venta = JSON.stringify(venta);
-    console.log(venta);
-
-    fetch('./src/php/api.php?action=registrarVenta',{
-        method: 'POST',
-        headers:{
-            'Content-type': 'application/json'
-        },
-        body: venta
-    })
-    .then(response => response.json())
-    .then(result => {
-        console.log('respuesta del server', result);
-    })
-    .catch(error => console.log('error:', error));
+export function registrarVenta(venta) {
+    Swal.fire({
+        title: "Estas seguro?",
+        text: "No podras cancelar la venta despues!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        cancelButtonText: 'Cancelar',
+        confirmButtonText: "Sí, registrar!"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch('./src/php/api.php?action=registrarVenta', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: venta // Aquí se pasa el JSON generado
+            })
+            .then(response => response.json()) // Procesar la respuesta JSON del servidor
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: "Registrada!",
+                        text: "Venta registrada con exito!",
+                        icon: "success"
+                    });
+                } else {
+                    console.error('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error al registrar la venta:', error);
+            });
+        }
+    });
 }
