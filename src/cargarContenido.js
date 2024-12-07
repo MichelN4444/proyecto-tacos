@@ -22,6 +22,7 @@ if (!cookies.split("; ").some(cookie => cookie.startsWith("login="))) {
 //////////////////Crreacion dinamica de las mesas/////////////////////
 menuVentas.addEventListener('click',()=>{
     contenido.innerHTML = ''
+    console.log ('click en menu');
     //////////////////////Tickets por mesa//////////////////////////////////
     const plantilla = ` 
     <button class="mesa" id='mesa1' ><img src="./img/mesa.png"></button>
