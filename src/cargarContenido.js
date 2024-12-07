@@ -1,8 +1,8 @@
-import {formulario} from './menuDinamico';
-import { agregarProducto } from './menuDinamico';
+import {formulario, llenarCategorias, agregarProducto} from './menuDinamico';
 import { tabla } from './menuDinamico';
 import { btnEditarProductos } from './menuDinamico';
 import { registrarVenta } from './venta';
+import { agregarCategorias } from './menuDinamico';
 
 const menuVentas = document.getElementById('ventas');
 const menuInventarios = document.getElementById('inventario');
@@ -42,7 +42,7 @@ menuVentas.addEventListener('click',()=>{
     fetch('./src/php/api.php?action=cargarProductos')
     .then(response => response.json())
     .then(productos => {
-        
+        console.log(productos);
         mesas.forEach((mesa, i) => {
             mesa.addEventListener('click', () => {
                 
@@ -56,58 +56,42 @@ menuVentas.addEventListener('click',()=>{
                     ticket.classList.add('ticket');
                     ticket.dataset.index = i;
                     let html = `<h2>Orden de mesa ${i + 1}</h2>
-                    <form data-index="${i}">
-                    <details>
-                    <summary>Tacos</summary>`;
-                    const tacos = productos.filter(producto => producto.categoria === 'Tacos');
-                    tacos.forEach(taco => {
-                        html += `<label>${taco.nombre}</label>
-                        <input type="number" name="${taco.nombre.toLowerCase()}" value="${tickets[i][taco.nombre.toLowerCase()] || 0}" min='0'><br>`;
+                    <form data-index="${i}">`;
+
+                    const categorias = [...new Set(productos.map(producto => producto.categoria_nombre))];
+
+                    categorias.forEach(categoria=>{
+                        html += `
+                        <details>
+                            <summary>${categoria}</summary>`;
+
+                        const productosCategoria = productos.filter(producto => producto.categoria_nombre == categoria);
+                        productosCategoria.forEach(producto => {
+                            if (producto.producto_nombre) {
+                                const nombreProducto = producto.producto_nombre.toLowerCase();
+                                const valor = tickets[i][nombreProducto] || 0;
+                                html += `
+                                <label>${producto.producto_nombre}</label>
+                                <input type="number" name="${nombreProducto}" value="${valor}" min="0"><br>`;
+                            } else {
+                                console.warn(`Producto sin nombre encontrado: ${JSON.stringify(producto)}`);
+                            }
+                        });
+
+                        html += "</details>"
                     });
-                    
-                    html += `</details>
-                    <details>
-                    <summary>Alambres</summary>`;
-                    
-                    const alambres = productos.filter(producto => producto.categoria === 'Alambres');
-                    alambres.forEach(alambre => {
-                        html += `<label>${alambre.nombre}</label>
-                                <input type="number" name="${alambre.nombre.toLowerCase()}" value="${tickets[i][alambre.nombre.toLowerCase()] || 0}" min='0'><br>`;
-                            });
-                            
-                            html += `</details>
-                            <details>
-                            <summary>Bebidas</summary>`;
-                            
-                            const bebidas = productos.filter(producto => producto.categoria === 'Bebidas');
-                            bebidas.forEach(bebida => {
-                                html += `<label>${bebida.nombre}</label>
-                                <input type='number' name='${bebida.nombre.toLowerCase()}' value='${tickets[i][bebida.nombre.toLowerCase()] || 0}' min='0'><br>`;
-                            });
-                            
-                            html += `</details>
-                            <details>
-                            <summary>Postres</summary>`;
-                            
-                            const postres = productos.filter(producto => producto.categoria === 'Postres');
-                            postres.forEach(postre => {
-                                html += `<label>${postre.nombre}</label>
-                                <input type="number" name="${postre.nombre.toLowerCase()}" value="${tickets[i][postre.nombre.toLowerCase()] || 0}" min='0'><br>`;
-                            });
-                            
-                            html += `</details>
-                            <input type="button" value="Minimizar" onclick="minimizar(${i})">
-                            <input type="button" value="Cerrar cuenta" onclick="cerrarCuenta(${i})">
-                            </form>`;
-                            
-                            ticket.innerHTML = html;
-                            
-                            ticket.querySelectorAll('input[type=number]').forEach(input => {
-                                input.addEventListener('input', () => {
-                                    tickets[i][input.name] = input.value;
-                                });
-                            });
-                        contenido.appendChild(ticket);
+                    html += `
+                    <input type="button" value="Minimizar" onclick="minimizar(${i})">
+                    <input type="button" value="Cerrar cuenta" onclick="cerrarCuenta(${i})">
+                    </form>`;
+                    ticket.innerHTML = html;     
+
+                    ticket.querySelectorAll('input[type=number]').forEach(input => {
+                        input.addEventListener('input', () => {
+                                tickets[i][input.name] = input.value;
+                        });
+                    });
+                    contenido.appendChild(ticket);
                     }
                     if (ticket.classList.contains('hidden')) {
                         ticket.classList.remove('hidden')
@@ -116,6 +100,7 @@ menuVentas.addEventListener('click',()=>{
                 });
             });
             function cerrarCuenta(index){
+                console.log('3');
                 const ticket = document.querySelector(`.ticket[data-index="${index}"]`);//Los editados
                 const form = ticket.querySelector('form')
 
@@ -125,8 +110,7 @@ menuVentas.addEventListener('click',()=>{
                     const productoNombre = input.name;
                     const cantidad = parseInt(input.value, 10);
             
-                    // Buscar el producto en el array de productos (suponiendo que tienes un array 'productos')
-                    const producto = productos.find(p => p.nombre.toLowerCase() === productoNombre.toLowerCase());
+                    const producto = productos.find(p => p.producto_nombre && p.producto_nombre.toLowerCase() === productoNombre.toLowerCase());
             
                     if (producto && cantidad != 0) {
                         productosVenta.push({
@@ -138,6 +122,7 @@ menuVentas.addEventListener('click',()=>{
                     }
                 });
                 const venta = JSON.stringify(productosVenta);
+                
                 registrarVenta(venta);
                 form.querySelectorAll('input[type="number"]').forEach(input =>{
                     input.value = 0;
@@ -163,15 +148,191 @@ menuInventarios.addEventListener('click',()=>{
     // contenedorNuevo.id = 'contenedorInventarios';
     contenedorNuevo.innerHTML = formulario;
     contenido.appendChild(contenedorNuevo);
+    llenarCategorias();
     tabla();
     const btnAgregar = document.getElementById('btnAgregarProducto');
     btnAgregar.addEventListener('click', agregarProducto)
     const contenedorEditar= document.createElement('div');
     btnEditarProductos(contenedorEditar);
+    agregarCategorias();
     
     contenido.appendChild(contenedorEditar);
 })
 
+menuReportes.addEventListener('click', () => {
+    contenido.innerHTML = ''
+    const contenedorNuevo = document.createElement('div');
+    contenedorNuevo.setAttribute('id', 'resultados');
+
+    // Crear el contenido HTML para el informe
+    const plantilla = `
+    <h2>Informe de ventas</h2>
+    <p id="productoMasVendido"></p>
+    <p id="mejoresDias"></p>
+    <p id="totalGanancias"></p>`;
+    contenedorNuevo.innerHTML = plantilla;
+
+    // Crear el elemento canvas
+    const canvas = document.createElement('canvas');
+    canvas.setAttribute('id', 'grafica');
+    canvas.setAttribute('width', '400');
+    canvas.setAttribute('height', '200');
+
+    // Agregar el canvas al contenedorNuevo
+    contenedorNuevo.appendChild(canvas);
+
+    // Agregar el contenedor al body o a otro elemento
+    contenido.appendChild(contenedorNuevo);
+
+    fetch('./src/php/api.php?action=cargarVentas')  // Asumiendo que tienes esta API configurada
+        .then(response => response.json())
+        .then(ventas => {
+            console.log(ventas);
+            // Procesamos los datos para análisis
+            const productoMasVendido = obtenerProductoMasVendido(ventas);
+            const mejoresDias = obtenerMejoresDias(ventas);
+            const totalGanancias = calcularTotalGanancias(ventas);
+
+            // Mostrar resultados en la página
+            mostrarResultados(productoMasVendido, mejoresDias, totalGanancias);
+
+            // Graficar resultados
+            graficarDatos(productoMasVendido, mejoresDias, totalGanancias);
+        })
+        .catch(error => console.log(error));
+});
+
+function obtenerVentasAgrupadas(ventas) {
+    return ventas.reduce((acc, venta) => {
+        // Si no existe la clave 'venta_id', la creamos
+        if (!acc[venta.venta_id]) {
+            acc[venta.venta_id] = [];
+        }
+        // Agregamos la venta al grupo correspondiente
+        acc[venta.venta_id].push(venta);
+        return acc;
+    }, {});
+}
+
+function obtenerProductoMasVendido(ventas) {
+    const contadorProductos = {};
+
+    ventas.forEach(venta => {
+        const productoId = venta.producto_id;
+        if (contadorProductos[productoId]) {
+            contadorProductos[productoId] += venta.cantidad;
+        } else {
+            contadorProductos[productoId] = venta.cantidad;
+        }
+    });
+
+    // Encontrar el producto más vendido
+    const productoMasVendidoId = Object.keys(contadorProductos).reduce((a, b) => contadorProductos[a] > contadorProductos[b] ? a : b);
+
+    return productoMasVendidoId;
+}
+
+function obtenerMejoresDias(ventas) {
+    const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    const contadorDias = {};
+
+    ventas.forEach(venta => {
+        const fecha = new Date(venta.fecha_venta);
+        const diaSemana = fecha.getDay();
+
+        if (contadorDias[diaSemana]) {
+            contadorDias[diaSemana] += 1;
+        } else {
+            contadorDias[diaSemana] = 1;
+        }
+    });
+
+    const mejoresDias = Object.keys(contadorDias).map(dia => ({
+        dia: diasSemana[dia],
+        ventas: contadorDias[dia]
+    }));
+
+    return mejoresDias;
+}
+
+function calcularTotalGanancias(ventas) {
+    let total = 0;
+
+    ventas.forEach(venta => {
+        total += venta.precio * venta.cantidad;
+    });
+
+    return total;
+}
+
+function mostrarResultados(productoMasVendido, mejoresDias, totalGanancias) {
+    // Mostrar los resultados en la página (esto depende de cómo quieras estructurar tu HTML)
+    document.getElementById('productoMasVendido').innerText = `Producto más vendido: ${productoMasVendido}`;
+    let dias;
+    let ventas;
+    mejoresDias.forEach( dia=>{
+        dias = dia.dia;
+        ventas= dia.ventas;
+    })
+    document.getElementById('mejoresDias').innerText = `Mejores días: ${dias} con ${ventas} ventas`;
+    document.getElementById('totalGanancias').innerText = `Total de ganancias: $${totalGanancias.toFixed(2)}`;
+}
+
+function graficarDatos(productoMasVendido, mejoresDias, totalGanancias) {
+    const ctx = document.getElementById('grafica').getContext('2d');
+
+    // Graficar las ventas por día
+    const dias = mejoresDias.map(dia => dia.dia);
+    const cantidades = mejoresDias.map(dia => dia.ventas);
+
+    new Chart(ctx, {
+        type: 'bar',  // Puedes cambiar el tipo de gráfico
+        data: {
+            labels: dias,
+            datasets: [{
+                label: 'Ventas por Día',
+                data: cantidades,
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Mostrar el producto más vendido
+    const productoDiv = document.getElementById('productoMasVendido');
+    if (productoMasVendido) {
+        productoDiv.innerHTML = `<h3>Producto más vendido: ${productoMasVendido.producto_nombre}</h3><p>Total ventas: ${productoMasVendido.cantidad_total}</p>`;
+    } else {
+        productoDiv.innerHTML = `<h3>No se encontró el producto más vendido.</h3>`;
+    }
+
+    // Mostrar los mejores días
+    const diasDiv = document.getElementById('mejoresDias');
+    if (mejoresDias && mejoresDias.length > 0) {
+        diasDiv.innerHTML = `<h3>Mejores días para vender:</h3>`;
+        mejoresDias.forEach(dia => {
+            diasDiv.innerHTML += `<p>${dia.dia}: ${dia.cantidad} ventas</p>`;
+        });
+    } else {
+        diasDiv.innerHTML = `<h3>No se encontraron días con ventas destacadas.</h3>`;
+    }
+
+    // Mostrar las ganancias totales
+    const gananciasDiv = document.getElementById('totalGanancias');
+    if (totalGanancias !== undefined) {
+        gananciasDiv.innerHTML = `<h3>Ganancias totales: $${totalGanancias.toFixed(2)}</h3>`;
+    } else {
+        gananciasDiv.innerHTML = `<h3>No se encontraron datos de ganancias.</h3>`;
+    }
+}
 
 
 

@@ -32,20 +32,40 @@ switch ($action) {
     case 'registrarVenta':
         registrarVenta();
         break;
+    case 'registrarCategoria':
+        registrarCategoria();
+        break;
+    case 'obtenerCategorias':
+        obtenerCategorias();
+        break;
+    case 'cargarVentas':
+        cargarVentas();
+        break;
     default:
         echo json_encode(['error' => 'Invalid action']);
         break;
 }
 
-function obtenerProductos() {
+function obtenerProductos(){
     global $conn;
-    $query = "SELECT * FROM productos";
+    
+    // Realizamos el JOIN con la tabla categorias
+    $query = "SELECT productos.id, productos.nombre, productos.precio, productos.creado_en, categorias.nombre AS categoria_nombre
+            FROM productos
+            INNER JOIN categorias ON productos.categoria_id = categorias.id";
+
     $result = $conn->query($query);
 
     if ($result->num_rows > 0) {
         $productos = [];
         while ($row = $result->fetch_assoc()) {
-            $productos[] = $row;
+            $productos[] = [
+                'id' => $row['id'],
+                'nombre' => $row['nombre'],
+                'precio' => $row['precio'],
+                'creado_en' => $row['creado_en'],
+                'categoria' => $row['categoria_nombre']  // Aquí agregamos el nombre de la categoria
+            ];
         }
         echo json_encode($productos);
     } else {
@@ -53,18 +73,27 @@ function obtenerProductos() {
     }
 }
 
+
 function cargarProductos(){
     global $conn;
-    $sql = "SELECT nombre, categoria, precio, id FROM productos";
+    $sql = "SELECT 
+    p.nombre AS producto_nombre, 
+    c.nombre AS categoria_nombre, 
+    p.precio, 
+    p.id 
+    FROM productos p
+    JOIN categorias c ON p.categoria_id = c.id";
+
     $result = $conn->query($sql);
 
     $productos = [];
     if ($result->num_rows > 0) {
-        while($row = $result->fetch_assoc()) {
-            $productos[] = $row;
-        }
+    while ($row = $result->fetch_assoc()) {
+    $productos[] = $row;
+    }
     }
 
+    // Devolvemos los datos en formato JSON
     echo json_encode($productos);
 
     $conn->close();
@@ -74,16 +103,16 @@ function insertarProductos(){
     global $conn;
     $nombre = $_POST['nombre'] ?? '';
     $precio = $_POST['precio'] ?? 0;
-    $categoria = $_POST['categoria'] ?? '';
+    $categoria_id = $_POST['categoria_id'] ?? '';
 
-    if (empty($nombre) || empty($precio) || empty($categoria)) {
+    if (empty($nombre) || empty($precio) || empty($categoria_id)) {
         echo "Por favor, completa todos los campos obligatorios.";
             exit;
     }
 
-    $sql = "INSERT INTO productos (nombre, precio, categoria) VALUES (?, ?, ?)";
+    $sql = "INSERT INTO productos (nombre, precio, categoria_id) VALUES (?, ?, ?)";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("sds", $nombre, $precio, $categoria);
+    $stmt->bind_param("sds", $nombre, $precio, $categoria_id);
 
     if ($stmt->execute()) {
         echo "Producto agregado exitosamente.";
@@ -95,28 +124,70 @@ function insertarProductos(){
     $conn->close();                
 }
 
-function editarProductos(){
-    $productos = $_POST;
-    foreach ($productos as $key => $value) {
+function editarProductos() {
+    $data = json_decode(file_get_contents("php://input"), true);
+    if ($data) {
         global $conn;
-        // Extraer ID del nombre del campo (e.g., "nombre_1" -> ID: 1)
-        preg_match('/_(\d+)$/', $key, $matches);
-        if (isset($matches[1])) {
-            $id = $matches[1];
-            $campo = strtok($key, '_'); 
-            $valor = $value;
+        $errores = [];
+        $exitos = [];
 
-        if (!empty($valor)) {
-            $sql = "UPDATE productos SET $campo = ? WHERE id = ?";
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param("si", $valor, $id);
-            $stmt->execute();
+        foreach ($data as $id => $producto) {
+            foreach ($producto as $campo => $valor) {
+                // Procesar la categoría
+                if ($campo == 'categoria') {
+                    $nombreCategoria = $valor;
+
+                    // Buscar el ID de la categoría en la base de datos
+                    $sqlCategoria = "SELECT id FROM categorias WHERE nombre = ?";
+                    $stmtCategoria = $conn->prepare($sqlCategoria);
+                    $stmtCategoria->bind_param("s", $nombreCategoria);
+                    $stmtCategoria->execute();
+                    $resultCategoria = $stmtCategoria->get_result();
+
+                    if ($resultCategoria->num_rows > 0) {
+                        $categoria = $resultCategoria->fetch_assoc();
+                        $categoria_id = $categoria['id'];
+                        $campo = 'categoria_id';
+                        $valor = $categoria_id;
+                    } else {
+                        $errores[] = "Categoría '$nombreCategoria' no encontrada para producto ID $id.";
+                        continue; // Saltar a la siguiente iteración
+                    }
+                }
+
+                // Construir la consulta para actualizar el campo
+                $sql = "UPDATE productos SET $campo = ? WHERE id = ?";
+                $stmt = $conn->prepare($sql);
+
+                // Configurar los tipos de datos según el campo
+                if ($campo == 'precio') {
+                    $stmt->bind_param("di", $valor, $id);
+                } elseif ($campo == 'nombre' || $campo == 'categoria_id') {
+                    $stmt->bind_param("si", $valor, $id);
+                } else {
+                    $errores[] = "Campo '$campo' no reconocido para producto ID $id.";
+                    continue;
+                }
+
+                // Ejecutar la consulta
+                if ($stmt->execute()) {
+                    $exitos[] = "Producto ID $id actualizado correctamente (campo '$campo').";
+                } else {
+                    $errores[] = "Error al actualizar el campo '$campo' para producto ID $id.";
+                }
             }
         }
+
+        // Respuesta final
+        echo json_encode([
+            'success' => $exitos,
+            'errors' => $errores
+        ]);
+    } else {
+        echo json_encode(['error' => 'Datos no válidos']);
     }
-    
-    echo json_encode(['success' => 'Productos actualizados correctamente']);
 }
+
 
 function eliminarProducto() {
     global $conn;
@@ -141,6 +212,28 @@ function eliminarProducto() {
     $stmt->close();
     $conn->close();
 }
+
+
+function registrarCategoria(){
+    global $conn;
+    $json = file_get_contents('php://input');
+    $dato = json_decode($json, true);
+
+    try{
+        $consulta = $conn -> prepare("INSERT INTO categorias (nombre) VALUES (?)");//se prepara
+        $consulta -> bind_param("s", $dato['nombre']);//lo inserta en ?
+        if ($consulta ->execute()) {
+            echo json_encode(['success' => "Categoria registrada"]);
+        }else{
+            throw new Exception("Error al registrar");
+        }
+    } catch (Exception $e){
+        echo json_encode(['error'=> $e->getMessage()]);
+    }
+    $consulta->close();
+    $conn->close();
+}
+
 
 function registrarVenta() {
     global $conn;
@@ -189,4 +282,36 @@ function registrarVenta() {
     $consulta->close();
     $conn->close();
 }
+
+function obtenerCategorias(){
+    global $conn;
+    $consulta = "SELECT * FROM categorias";
+    $resultado = $conn -> query($consulta);
+    if ($resultado->num_rows>0) {
+        $categorias = [];
+        while($row = $resultado->fetch_assoc()){ //fecth recorre todas las filas
+            $categorias[] = ['id' => $row['id'], 'nombre' => $row['nombre']];
+        }
+        echo json_encode($categorias);
+    }else{
+        echo json_encode([]);
+    }
+}
+
+function cargarVentas() {
+    global $conn;
+    $sql = "SELECT producto_id, cantidad, precio, fecha_venta FROM ventas";
+    $result = $conn->query($sql);
+
+    $ventas = [];
+    if ($result->num_rows > 0) {
+        while($row = $result->fetch_assoc()) {
+            $ventas[] = $row;
+        }
+    }
+
+    echo json_encode($ventas);
+    $conn->close();
+}
+
 ?>

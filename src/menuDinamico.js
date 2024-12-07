@@ -1,12 +1,33 @@
+import Swal from "sweetalert2";
+
+export const llenarCategorias = () => {
+    fetch('./src/php/api.php?action=obtenerCategorias')
+    .then(response => response.json())
+    .then(data =>{
+        const form = document.getElementById('categoriaProducto');
+        form.innerHTML = '';
+        data.forEach(categoria =>{
+            const option = document.createElement('option');
+            option.value = categoria.id
+            option.textContent = categoria.nombre
+            form.appendChild(option);
+        })
+    })
+    .catch(error => console.log('Error al obtener las categorías:', error));
+}
+
 export const formulario = ` 
+    <form>
+        <h1>Agregar categorias</h1>
+        <label>Agregar categorias:</label>
+        <input type="text" id="inputCat">
+        <button type="button" id="btnAgregarCat">Agregar categorias</button>
+    </form>
     <form id='formAgregarProducto'>
-        <h1>Agregar productos</h1>
+        <h1>Agregar productos</h1> 
         <label>Categoria:</label>
         <select name='categoria' id="categoriaProducto">
-            <option>Tacos</option>
-            <option>Alambres</option>
-            <option>Bebidas</option>
-            <option>Postres</option>
+
         </select><br>
         <label>Introduce el nombre:</label>
         <input type='text' id="nombreProducto" name="nombre" placeholder='Nombre del producto' required><br>
@@ -24,7 +45,7 @@ export const formulario = `
                     <th>Categoria</th>
                     <th>Precio</th>
                     <th>Modificar</th>
-                    <th>Visible en el menú</th>
+                    <!--<th>Visible en el menú</th>-->
                 </tr>
             </thead>
             <tbody>
@@ -33,14 +54,66 @@ export const formulario = `
     </div>
     <button id="editarSeleccionados">Editar seleccionados</button>
 `;
+
+export const agregarCategorias = () => {
+    document.getElementById('btnAgregarCat').addEventListener('click', () =>{
+        let categoria = document.getElementById('inputCat').value;
+        if (categoria) {
+            Swal.fire({
+                title: "¿Estas seguro?",
+                text: "Agregarias: " + categoria,
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                cancelButtonText: "Cancelar",
+                confirmButtonText: "Sí, agregar!"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    let catjson = {nombre: categoria}
+                    fetch('./src/php/api.php?action=registrarCategoria',{
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                    //se pasan en json
+                        body: JSON.stringify(catjson)
+                    })
+                    .then(response => response.json())
+                    .then(data =>{
+                        if (data.success) {
+                            Swal.fire({
+                                position: "center",
+                                icon: "success",
+                                title: "Categoria registrada con exito!.",
+                                showConfirmButton: false,
+                                timer: 1500
+                            });
+                            document.getElementById('inputCat').value = '';
+                            location.reload();
+                        }else{
+                            Swal.fire("Error: " + data.error);
+                        }
+                    })
+                    .catch(error =>{
+                        Swal.fire("Error al agregar");
+                    })
+                }
+            });
+        }
+        else{
+            Swal.fire("Por favor, ingresa una categoria.!");
+        }
+})
+}
+
 //Llenar tabla
 export const tabla = () => {
     fetch('./src/php/api.php?action=obtenerProductos')
-    .then(response => response.json())
+    .then(response => response.json())//promise
     .then(data => {
         const llenarTabla = document.querySelector('#productosTabla tbody');
         llenarTabla.innerHTML = ''; 
-
         data.forEach(producto => {
             const fila = document.createElement('tr');
             fila.innerHTML = `
@@ -68,19 +141,31 @@ export const btnEditarProductos = (contenedorEditar) =>{
         }
         //Aqui se crea un formulario para editar o elimar
         let html = '<form id="editarFormulario">';
-        
         ids.forEach((id, i) => {
                 html += `
                     <br><label>Producto: ${nombres[i]}</label>
                     <input type="text" name="nombre_${id}" placeholder="Nuevo nombre">
                     <input type="number" name="precio_${id}" placeholder="Nuevo precio">
-                    <input type="text" name="categoria_${id}" placeholder="Nueva categoría">
+                    <select name="categoria_${id}">
+                    <option value="">Selecciona una categoría</option>
+                        
+                    </select>
                     <button type="button" class='btnEliminar' data-id="${id}">Eliminar producto</button></form>
                 `;
         });
-    html += `<button type="submit">Guardar cambios</button></form>`;
+    html += `<br><button type="button" id="guardar">Guardar cambios</button></form>`;
     contenedorEditar.innerHTML = html;
-    // Manejar la edición y guardar en la BD
+    
+    fetch('./src/php/api.php?action=obtenerCategorias')
+            .then(response => response.json())
+            .then(data => {
+                const selects = document.querySelectorAll('select[name^="categoria_"]');
+                selects.forEach(select => {
+                    data.forEach(categoria => {
+                        select.innerHTML += `<option value="${categoria.nombre}">${categoria.nombre}</option>`;
+                    });
+                });
+            });
 
     document.querySelectorAll('.btnEliminar').forEach(btn =>{
         btn.addEventListener('click', (e)=>{
@@ -134,42 +219,82 @@ export const btnEditarProductos = (contenedorEditar) =>{
             });
         })
     })
-    document.querySelector('#editarFormulario').addEventListener('submit', (e) => {
+    document.getElementById('guardar').addEventListener('click', (e) => {
         e.preventDefault();
-
-        const formData = new FormData(e.target);
-        fetch('http://localhost:82/proyecto-tacos/src/php/api.php?action=editarProductos', {
-            method: 'POST',
-            body: formData
-        })
-            .then(response => response.json())
-            .then(result => {
-                if (result.success) {
-                    alert('Productos actualizados');
-                    location.reload(); // Recargar la tabla
-                } else {
-                    alert('Error al actualizar los productos');
+        const form = document.getElementById('editarFormulario')
+        Swal.fire({
+            title: "¿Estas seguro?",
+            text: "Cambiaras los datos!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            cancelButtonText: "Cancelar",
+            confirmButtonText: "Sí, cambiar!"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                if (form) {
+                    const datosProducto = {};
+                    const inputs = form.querySelectorAll('input, select');
+                    inputs.forEach(input => {
+                        const name = input.name;
+                        const value = input.value;
+                        console.log(inputs);
+                        console.log(`Procesando input: name=${name}, value=${value}`);
+                        if (name && value) {
+                            // Extraer el ID de la categoría desde el nombre del campo (por ejemplo "categoria_1")
+                            const [campo, id] = name.split('_');
+                            if (!datosProducto[id]) {
+                                datosProducto[id] = {};
+                            }
+                            datosProducto[id][campo] = value;
+                        }
+                    });
+                    console.log(datosProducto);
+                    fetch('./src/php/api.php?action=editarProductos', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(datosProducto), 
+                    })
+                    .then(response => response.json())
+                    .then(result => {
+                        if (result.success) {
+                            Swal.fire({
+                                title: "Actualizado!",
+                                text: "Productos actualizados.",
+                                icon: "success"
+                            });
+                            setTimeout(()=>{
+                                location.reload();
+                            },1500)
+                        } else {
+                            alert('Error al actualizar los productos');
+                        }
+                    });
                 }
-            });
+            }
+        });
     });
     })
 }
 //En el html de arriba colocar la tabla en donde se verán los productos que tenemos, podemos tambien hacer las categorias dinamicas
 export const agregarProducto = () =>{
-    const categoria = document.getElementById("categoriaProducto").value.trim();
+    const categoria_id = document.getElementById("categoriaProducto").value.trim();
     const nombre = document.getElementById("nombreProducto").value.trim();
     const precio = document.getElementById("precioProducto").value.trim();
 
     // Validar que todos los campos estén completos
-    if (!nombre || !precio || !categoria) {
+    if (!nombre || !precio || !categoria_id) {
         Swal.fire("Por favor, completa todos los campos obligatorios.");
         return;
     }
 
     // Crear el objeto 
-    const datos = `nombre=${encodeURIComponent(nombre)}&precio=${encodeURIComponent(precio)}&categoria=${encodeURIComponent(categoria)}`;
+    const datos = `nombre=${encodeURIComponent(nombre)}&precio=${encodeURIComponent(precio)}&categoria_id=${encodeURIComponent(categoria_id)}`;
 
-    // Enviar los datos por AJAX
+    // Enviar los datos por AJAX despues pasarlo con fetch
     const xhr = new XMLHttpRequest();
     xhr.open("POST", "./src/php/api.php?action=insertarProductos", true);//?action=insertarProductos
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");

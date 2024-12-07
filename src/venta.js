@@ -25,6 +25,9 @@ export function registrarVenta(venta) {
                         text: "Venta registrada con exito!",
                         icon: "success"
                     });
+                    form.querySelectorAll('input[type="number"]').forEach(input =>{
+                        input.value = 0;
+                    })
                 } else {
                     console.error('Error: ' + data.error);
                 }
