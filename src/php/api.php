@@ -14,6 +14,9 @@ if (!$action) {
 }
 
 switch ($action) {
+    case 'obtenerProductosBaseId':
+        obtenerProductosId();
+        break;
     case 'obtenerProductos':
         obtenerProductos();
         break;
@@ -311,6 +314,37 @@ function cargarVentas() {
     }
 
     echo json_encode($ventas);
+    $conn->close();
+}
+
+function obtenerProductosId(){
+    global $conn;
+
+    $json = file_get_contents('php://input');
+    $data = json_decode($json, true);
+
+    //Aqui tenemos el id del producto
+
+    $productoId = $data['id_producto'];
+
+    // Consultamos la base de datos para obtener el nombre del producto según el id
+    $query = "SELECT nombre FROM productos WHERE id = ?";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param('i', $productoId); 
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+
+    if ($resultado->num_rows > 0) {
+        // Si se encuentra el producto, obtenemos el nombre
+        $producto = $resultado->fetch_assoc();
+        $nombreProducto = $producto['nombre'];
+        
+        // Devolvemos el nombre del producto como JSON
+        echo json_encode(['nombre' => $nombreProducto]);
+    } else {
+        // Si no se encuentra el producto, devolvemos un error
+        echo json_encode(['error' => 'Producto no encontrado']);
+    }
     $conn->close();
 }
 

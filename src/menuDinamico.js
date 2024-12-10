@@ -55,7 +55,7 @@ export const formulario = `
     <button id="editarSeleccionados">Editar seleccionados</button>
 `;
 
-export const agregarCategorias = () => {
+export const agregarCategorias = (recargar) => {
     document.getElementById('btnAgregarCat').addEventListener('click', () =>{
         let categoria = document.getElementById('inputCat').value;
         if (categoria) {
@@ -90,7 +90,7 @@ export const agregarCategorias = () => {
                                 timer: 1500
                             });
                             document.getElementById('inputCat').value = '';
-                            location.reload();
+                            recargar();
                         }else{
                             Swal.fire("Error: " + data.error);
                         }
@@ -129,7 +129,7 @@ export const tabla = () => {
    //Aqui va
 }
 
-export const btnEditarProductos = (contenedorEditar) =>{
+export const btnEditarProductos = (contenedorEditar, recargar) =>{
     document.getElementById('editarSeleccionados').addEventListener('click' ,()=>{
         const seleccionados = document.querySelectorAll('.seleccionar:checked');
         const ids = Array.from(seleccionados).map(checkbox => checkbox.value);
@@ -143,17 +143,17 @@ export const btnEditarProductos = (contenedorEditar) =>{
         let html = '<form id="editarFormulario">';
         ids.forEach((id, i) => {
                 html += `
-                    <br><label>Producto: ${nombres[i]}</label>
+                    <br><br><label>Producto: ${nombres[i]}</label>
                     <input type="text" name="nombre_${id}" placeholder="Nuevo nombre">
                     <input type="number" name="precio_${id}" placeholder="Nuevo precio">
                     <select name="categoria_${id}">
                     <option value="">Selecciona una categoría</option>
                         
                     </select>
-                    <button type="button" class='btnEliminar' data-id="${id}">Eliminar producto</button></form>
+                    <button type="button" class='btnEliminar' data-id="${id}">Eliminar producto</button>
                 `;
         });
-    html += `<br><button type="button" id="guardar">Guardar cambios</button></form>`;
+    html += `<br><br><button type="button" id="guardar">Guardar cambios</button></form>`;
     contenedorEditar.innerHTML = html;
     
     fetch('./src/php/api.php?action=obtenerCategorias')
@@ -194,7 +194,7 @@ export const btnEditarProductos = (contenedorEditar) =>{
                             text: "El producto fue eliminado.",
                             icon: "success"
                         });
-                        location.reload(); // Recargar la tabla para reflejar los cambios
+                        recargar(); // Recargar la tabla para reflejar los cambios
                     } else {
                         Swal.fire({
                             title: "Ha ocurrido un error",
@@ -239,8 +239,6 @@ export const btnEditarProductos = (contenedorEditar) =>{
                     inputs.forEach(input => {
                         const name = input.name;
                         const value = input.value;
-                        console.log(inputs);
-                        console.log(`Procesando input: name=${name}, value=${value}`);
                         if (name && value) {
                             // Extraer el ID de la categoría desde el nombre del campo (por ejemplo "categoria_1")
                             const [campo, id] = name.split('_');
@@ -250,7 +248,6 @@ export const btnEditarProductos = (contenedorEditar) =>{
                             datosProducto[id][campo] = value;
                         }
                     });
-                    console.log(datosProducto);
                     fetch('./src/php/api.php?action=editarProductos', {
                         method: 'POST',
                         headers: {
@@ -266,9 +263,7 @@ export const btnEditarProductos = (contenedorEditar) =>{
                                 text: "Productos actualizados.",
                                 icon: "success"
                             });
-                            setTimeout(()=>{
-                                location.reload();
-                            },1500)
+                            recargar();
                         } else {
                             alert('Error al actualizar los productos');
                         }
@@ -280,7 +275,7 @@ export const btnEditarProductos = (contenedorEditar) =>{
     })
 }
 //En el html de arriba colocar la tabla en donde se verán los productos que tenemos, podemos tambien hacer las categorias dinamicas
-export const agregarProducto = () =>{
+export const agregarProducto = (recargar) =>{
     const categoria_id = document.getElementById("categoriaProducto").value.trim();
     const nombre = document.getElementById("nombreProducto").value.trim();
     const precio = document.getElementById("precioProducto").value.trim();
@@ -302,13 +297,10 @@ export const agregarProducto = () =>{
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4) {
             if (xhr.status === 200) {
-                console.log(xhr.responseText);
                 Swal.fire(xhr.responseText);
                 // Limpiar campos si se agregó correctamente
                 document.getElementById("formAgregarProducto").reset();
-                setTimeout(() => {
-                    location.reload();
-                }, 1000);
+                recargar();
             } else {
                 console.log("Error en la solicitud:", xhr.status, xhr.responseText);
                 Swal.fire("Error al agregar el producto. Intenta nuevamente.");

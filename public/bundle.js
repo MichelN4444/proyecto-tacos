@@ -4027,7 +4027,7 @@ const formulario = `
     <button id="editarSeleccionados">Editar seleccionados</button>
 `;
 
-const agregarCategorias = () => {
+const agregarCategorias = (recargar) => {
     document.getElementById('btnAgregarCat').addEventListener('click', () =>{
         let categoria = document.getElementById('inputCat').value;
         if (categoria) {
@@ -4062,7 +4062,7 @@ const agregarCategorias = () => {
                                 timer: 1500
                             });
                             document.getElementById('inputCat').value = '';
-                            location.reload();
+                            recargar();
                         }else {
                             Swal$1.fire("Error: " + data.error);
                         }
@@ -4101,7 +4101,7 @@ const tabla = () => {
    //Aqui va
 };
 
-const btnEditarProductos = (contenedorEditar) =>{
+const btnEditarProductos = (contenedorEditar, recargar) =>{
     document.getElementById('editarSeleccionados').addEventListener('click' ,()=>{
         const seleccionados = document.querySelectorAll('.seleccionar:checked');
         const ids = Array.from(seleccionados).map(checkbox => checkbox.value);
@@ -4115,17 +4115,17 @@ const btnEditarProductos = (contenedorEditar) =>{
         let html = '<form id="editarFormulario">';
         ids.forEach((id, i) => {
                 html += `
-                    <br><label>Producto: ${nombres[i]}</label>
+                    <br><br><label>Producto: ${nombres[i]}</label>
                     <input type="text" name="nombre_${id}" placeholder="Nuevo nombre">
                     <input type="number" name="precio_${id}" placeholder="Nuevo precio">
                     <select name="categoria_${id}">
                     <option value="">Selecciona una categoría</option>
                         
                     </select>
-                    <button type="button" class='btnEliminar' data-id="${id}">Eliminar producto</button></form>
+                    <button type="button" class='btnEliminar' data-id="${id}">Eliminar producto</button>
                 `;
         });
-    html += `<br><button type="button" id="guardar">Guardar cambios</button></form>`;
+    html += `<br><br><button type="button" id="guardar">Guardar cambios</button></form>`;
     contenedorEditar.innerHTML = html;
     
     fetch('./src/php/api.php?action=obtenerCategorias')
@@ -4166,7 +4166,7 @@ const btnEditarProductos = (contenedorEditar) =>{
                             text: "El producto fue eliminado.",
                             icon: "success"
                         });
-                        location.reload(); // Recargar la tabla para reflejar los cambios
+                        recargar(); // Recargar la tabla para reflejar los cambios
                     } else {
                         Swal$1.fire({
                             title: "Ha ocurrido un error",
@@ -4211,8 +4211,6 @@ const btnEditarProductos = (contenedorEditar) =>{
                     inputs.forEach(input => {
                         const name = input.name;
                         const value = input.value;
-                        console.log(inputs);
-                        console.log(`Procesando input: name=${name}, value=${value}`);
                         if (name && value) {
                             // Extraer el ID de la categoría desde el nombre del campo (por ejemplo "categoria_1")
                             const [campo, id] = name.split('_');
@@ -4222,7 +4220,6 @@ const btnEditarProductos = (contenedorEditar) =>{
                             datosProducto[id][campo] = value;
                         }
                     });
-                    console.log(datosProducto);
                     fetch('./src/php/api.php?action=editarProductos', {
                         method: 'POST',
                         headers: {
@@ -4238,9 +4235,7 @@ const btnEditarProductos = (contenedorEditar) =>{
                                 text: "Productos actualizados.",
                                 icon: "success"
                             });
-                            setTimeout(()=>{
-                                location.reload();
-                            },1500);
+                            recargar();
                         } else {
                             alert('Error al actualizar los productos');
                         }
@@ -4252,7 +4247,7 @@ const btnEditarProductos = (contenedorEditar) =>{
     });
 };
 //En el html de arriba colocar la tabla en donde se verán los productos que tenemos, podemos tambien hacer las categorias dinamicas
-const agregarProducto = () =>{
+const agregarProducto = (recargar) =>{
     const categoria_id = document.getElementById("categoriaProducto").value.trim();
     const nombre = document.getElementById("nombreProducto").value.trim();
     const precio = document.getElementById("precioProducto").value.trim();
@@ -4274,13 +4269,10 @@ const agregarProducto = () =>{
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4) {
             if (xhr.status === 200) {
-                console.log(xhr.responseText);
                 Swal$1.fire(xhr.responseText);
                 // Limpiar campos si se agregó correctamente
                 document.getElementById("formAgregarProducto").reset();
-                setTimeout(() => {
-                    location.reload();
-                }, 1000);
+                recargar();
             } else {
                 console.log("Error en la solicitud:", xhr.status, xhr.responseText);
                 Swal$1.fire("Error al agregar el producto. Intenta nuevamente.");
@@ -4329,6 +4321,162 @@ function registrarVenta(venta) {
             });
         }
     });
+}
+
+/////////////////PARA ANALIZAR LAS VENTAS/////////////////77
+function obtenerVentas(){
+    fetch('./src/php/api.php?action=cargarVentas') 
+        .then(response => response.json())
+        .then(ventas => {
+            console.log(ventas);
+
+            const productoMasVendido = obtenerProductoMasVendido(ventas);
+            const mejoresDias = obtenerMejoresDias(ventas);
+            const totalGanancias = calcularTotalGanancias(ventas);
+
+            // Mostrar resultados en la página
+            mostrarResultados(productoMasVendido, mejoresDias, totalGanancias);
+
+            // Graficar resultados
+            graficarDatos(productoMasVendido, mejoresDias, totalGanancias);
+        })
+        .catch(error => console.log(error));
+}
+
+function obtenerProductoMasVendido(ventas) {
+    const contadorProductos = {};//objeto
+
+    ventas.forEach(venta => {
+        const productoId = venta.producto_id;
+        if (contadorProductos[productoId]) {
+            contadorProductos[productoId] += venta.cantidad;
+        } else {
+            contadorProductos[productoId] = venta.cantidad;
+        }
+    });
+
+    // Encontrar el producto más vendido
+    let productoMasVendidoId = Object.keys(contadorProductos).reduce((a, b) => contadorProductos[a] > contadorProductos[b] ? a : b);
+    //console.log(productoMasVendidoId);
+    let idjson = {id_producto: productoMasVendidoId};
+
+    fetch('./src/php/api.php?action=obtenerProductosId',{
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(idjson),
+    })
+    .then(response => response.json())
+    .then(data =>{
+        productoMasVendidoId = data;
+        console.log(data);
+    });
+    return productoMasVendidoId;
+}
+
+function obtenerMejoresDias(ventas) {
+    const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    const contadorDias = {};
+
+    ventas.forEach(venta => {
+        const fecha = new Date(venta.fecha_venta);
+        const diaSemana = fecha.getDay();
+
+        if (contadorDias[diaSemana]) {
+            contadorDias[diaSemana] += 1;
+        } else {
+            contadorDias[diaSemana] = 1;
+        }
+    });
+
+    const mejoresDias = Object.keys(contadorDias).map(dia => ({
+        dia: diasSemana[dia],
+        ventas: contadorDias[dia]
+    }));
+
+    return mejoresDias;
+}
+
+function calcularTotalGanancias(ventas) {
+    let total = 0;
+
+    ventas.forEach(venta => {
+        total += venta.precio * venta.cantidad;
+    });
+
+    return total;
+}
+
+
+function mostrarResultados(productoMasVendidoId, mejoresDias, totalGanancias) {
+
+    document.getElementById('productoMasVendido').innerText = `Producto más venndido: ${productoMasVendidoId}`;
+    console.log(productoMasVendidoId);
+    let dias;
+    let ventas;
+    mejoresDias.forEach( dia=>{
+        dias = dia.dia;
+        ventas= dia.ventas;
+    });
+    document.getElementById('mejoresDias').innerText = `Mejores días: ${dias} con ${ventas} ventas`;
+    document.getElementById('totalGanancias').innerText = `Tots al de ganancias: $${totalGanancias.toFixed(2)}`;
+}
+
+function graficarDatos(productoMasVendidoId, mejoresDias, totalGanancias) {
+    const ctx = document.getElementById('grafica').getContext('2d');
+
+    // Graficar las ventas por día
+    const dias = mejoresDias.map(dia => dia.dia);
+    const cantidades = mejoresDias.map(dia => dia.ventas);
+
+    new Chart(ctx, {
+        type: 'bar',  // Puedes cambiar el tipo de gráfico
+        data: {
+            labels: dias,
+            datasets: [{
+                label: 'Ventas por Día',
+                data: cantidades,
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Mostrar el producto más vendido
+    const productoDiv = document.getElementById('productoMasVendido');
+    if (productoMasVendidoId) {
+        productoDiv.innerHTML = `<h3>Producto más vendido: ${productoMasVendidoId}</h3><p>Total ventas: ${productoMasVendidoId.cantidad_total}</p>`;
+    } else {
+        productoDiv.innerHTML = `<h3>No se encontró el producto más vendido.</h3>`;
+    }
+
+    // Mostrar los mejores días
+    const diasDiv = document.getElementById('mejoresDias');
+    if (mejoresDias && mejoresDias.length > 0) {
+        diasDiv.innerHTML = `<h3>Mejores días para vender:</h3>`;
+        mejoresDias.forEach(dia => {
+            diasDiv.innerHTML += `<p>${dia.dia}: ${dia.cantidad} ventas</p>`;
+        });
+    } else {
+        diasDiv.innerHTML = `<h3>No se encontraron días con ventas destacadas.</h3>`;
+    }
+
+    // Mostrar las ganancias totales
+    const gananciasDiv = document.getElementById('totalGanancias');
+    if (totalGanancias !== undefined) {
+        gananciasDiv.innerHTML = `<h3>Ganancias totales: $${totalGanancias.toFixed(2)}</h3>`;
+    } else {
+        gananciasDiv.innerHTML = `<h3>No se encontraron datos de ganancias.</h3>`;
+    }
 }
 
 const menuVentas = document.getElementById('ventas');
@@ -4471,6 +4619,10 @@ menuVentas.addEventListener('click',()=>{
 
 ///////////////////Inventarios////////////////////
 menuInventarios.addEventListener('click',()=>{
+    recargar();
+});
+
+function recargar (){
     contenido.innerHTML = '';
     const contenedorNuevo = document.createElement('div');
     // contenedorNuevo.id = 'contenedorInventarios';
@@ -4479,13 +4631,13 @@ menuInventarios.addEventListener('click',()=>{
     llenarCategorias();
     tabla();
     const btnAgregar = document.getElementById('btnAgregarProducto');
-    btnAgregar.addEventListener('click', agregarProducto);
+    btnAgregar.addEventListener('click', ()=>agregarProducto(recargar));
     const contenedorEditar= document.createElement('div');
-    btnEditarProductos(contenedorEditar);
-    agregarCategorias();
+    btnEditarProductos(contenedorEditar, recargar);
+    agregarCategorias(recargar);
     
     contenido.appendChild(contenedorEditar);
-});
+}
 
 menuReportes.addEventListener('click', () => {
     contenido.innerHTML = '';
@@ -4503,8 +4655,8 @@ menuReportes.addEventListener('click', () => {
     // Crear el elemento canvas
     const canvas = document.createElement('canvas');
     canvas.setAttribute('id', 'grafica');
-    canvas.setAttribute('width', '400');
-    canvas.setAttribute('height', '200');
+    canvas.setAttribute('width', '784');
+    canvas.setAttribute('height', '331');
 
     // Agregar el canvas al contenedorNuevo
     contenedorNuevo.appendChild(canvas);
@@ -4512,143 +4664,9 @@ menuReportes.addEventListener('click', () => {
     // Agregar el contenedor al body o a otro elemento
     contenido.appendChild(contenedorNuevo);
 
-    fetch('./src/php/api.php?action=cargarVentas')  // Asumiendo que tienes esta API configurada
-        .then(response => response.json())
-        .then(ventas => {
-            console.log(ventas);
-            // Procesamos los datos para análisis
-            const productoMasVendido = obtenerProductoMasVendido(ventas);
-            const mejoresDias = obtenerMejoresDias(ventas);
-            const totalGanancias = calcularTotalGanancias(ventas);
+    obtenerVentas();
 
-            // Mostrar resultados en la página
-            mostrarResultados(productoMasVendido, mejoresDias, totalGanancias);
-
-            // Graficar resultados
-            graficarDatos(productoMasVendido, mejoresDias, totalGanancias);
-        })
-        .catch(error => console.log(error));
 });
-
-function obtenerProductoMasVendido(ventas) {
-    const contadorProductos = {};
-
-    ventas.forEach(venta => {
-        const productoId = venta.producto_id;
-        if (contadorProductos[productoId]) {
-            contadorProductos[productoId] += venta.cantidad;
-        } else {
-            contadorProductos[productoId] = venta.cantidad;
-        }
-    });
-
-    // Encontrar el producto más vendido
-    const productoMasVendidoId = Object.keys(contadorProductos).reduce((a, b) => contadorProductos[a] > contadorProductos[b] ? a : b);
-
-    return productoMasVendidoId;
-}
-
-function obtenerMejoresDias(ventas) {
-    const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-    const contadorDias = {};
-
-    ventas.forEach(venta => {
-        const fecha = new Date(venta.fecha_venta);
-        const diaSemana = fecha.getDay();
-
-        if (contadorDias[diaSemana]) {
-            contadorDias[diaSemana] += 1;
-        } else {
-            contadorDias[diaSemana] = 1;
-        }
-    });
-
-    const mejoresDias = Object.keys(contadorDias).map(dia => ({
-        dia: diasSemana[dia],
-        ventas: contadorDias[dia]
-    }));
-
-    return mejoresDias;
-}
-
-function calcularTotalGanancias(ventas) {
-    let total = 0;
-
-    ventas.forEach(venta => {
-        total += venta.precio * venta.cantidad;
-    });
-
-    return total;
-}
-
-function mostrarResultados(productoMasVendido, mejoresDias, totalGanancias) {
-    // Mostrar los resultados en la página (esto depende de cómo quieras estructurar tu HTML)
-    document.getElementById('productoMasVendido').innerText = `Producto más vendido: ${productoMasVendido}`;
-    let dias;
-    let ventas;
-    mejoresDias.forEach( dia=>{
-        dias = dia.dia;
-        ventas= dia.ventas;
-    });
-    document.getElementById('mejoresDias').innerText = `Mejores días: ${dias} con ${ventas} ventas`;
-    document.getElementById('totalGanancias').innerText = `Total de ganancias: $${totalGanancias.toFixed(2)}`;
-}
-
-function graficarDatos(productoMasVendido, mejoresDias, totalGanancias) {
-    const ctx = document.getElementById('grafica').getContext('2d');
-
-    // Graficar las ventas por día
-    const dias = mejoresDias.map(dia => dia.dia);
-    const cantidades = mejoresDias.map(dia => dia.ventas);
-
-    new Chart(ctx, {
-        type: 'bar',  // Puedes cambiar el tipo de gráfico
-        data: {
-            labels: dias,
-            datasets: [{
-                label: 'Ventas por Día',
-                data: cantidades,
-                backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
-        }
-    });
-
-    // Mostrar el producto más vendido
-    const productoDiv = document.getElementById('productoMasVendido');
-    if (productoMasVendido) {
-        productoDiv.innerHTML = `<h3>Producto más vendido: ${productoMasVendido.producto_nombre}</h3><p>Total ventas: ${productoMasVendido.cantidad_total}</p>`;
-    } else {
-        productoDiv.innerHTML = `<h3>No se encontró el producto más vendido.</h3>`;
-    }
-
-    // Mostrar los mejores días
-    const diasDiv = document.getElementById('mejoresDias');
-    if (mejoresDias && mejoresDias.length > 0) {
-        diasDiv.innerHTML = `<h3>Mejores días para vender:</h3>`;
-        mejoresDias.forEach(dia => {
-            diasDiv.innerHTML += `<p>${dia.dia}: ${dia.cantidad} ventas</p>`;
-        });
-    } else {
-        diasDiv.innerHTML = `<h3>No se encontraron días con ventas destacadas.</h3>`;
-    }
-
-    // Mostrar las ganancias totales
-    const gananciasDiv = document.getElementById('totalGanancias');
-    if (totalGanancias !== undefined) {
-        gananciasDiv.innerHTML = `<h3>Ganancias totales: $${totalGanancias.toFixed(2)}</h3>`;
-    } else {
-        gananciasDiv.innerHTML = `<h3>No se encontraron datos de ganancias.</h3>`;
-    }
-}
 
 
 
