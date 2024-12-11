@@ -14,7 +14,7 @@ if (!$action) {
 }
 
 switch ($action) {
-    case 'obtenerProductosBaseId':
+    case 'obtenerProductosId':
         obtenerProductosId();
         break;
     case 'obtenerProductos':
@@ -303,7 +303,7 @@ function obtenerCategorias(){
 
 function cargarVentas() {
     global $conn;
-    $sql = "SELECT producto_id, cantidad, precio, fecha_venta FROM ventas";
+    $sql = "SELECT producto_id, cantidad, precio, fecha_venta, venta_id FROM ventas";
     $result = $conn->query($sql);
 
     $ventas = [];
@@ -317,35 +317,46 @@ function cargarVentas() {
     $conn->close();
 }
 
-function obtenerProductosId(){
+function obtenerProductosId() {
     global $conn;
 
     $json = file_get_contents('php://input');
     $data = json_decode($json, true);
 
-    //Aqui tenemos el id del producto
-
-    $productoId = $data['id_producto'];
-
-    // Consultamos la base de datos para obtener el nombre del producto según el id
-    $query = "SELECT nombre FROM productos WHERE id = ?";
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param('i', $productoId); 
-    $stmt->execute();
-    $resultado = $stmt->get_result();
-
-    if ($resultado->num_rows > 0) {
-        // Si se encuentra el producto, obtenemos el nombre
-        $producto = $resultado->fetch_assoc();
-        $nombreProducto = $producto['nombre'];
-        
-        // Devolvemos el nombre del producto como JSON
-        echo json_encode(['nombre' => $nombreProducto]);
-    } else {
-        // Si no se encuentra el producto, devolvemos un error
-        echo json_encode(['error' => 'Producto no encontrado']);
+    if (!isset($data['id_producto']) || !is_numeric($data['id_producto'])) {
+        echo json_encode(['error' => 'ID de producto inválido']);
+        return;
     }
-    $conn->close();
+
+    $id_producto = $data['id_producto'];
+
+    try {
+        // Cambiar el marcador de posición a ?
+        $stmt = $conn->prepare("
+            SELECT p.nombre 
+            FROM productos p
+            WHERE p.id = ?
+        ");
+
+        // Usar bind_param para enlazar el parámetro
+        $stmt->bind_param('i', $id_producto); // 'i' indica que es un entero
+
+        $stmt->execute();
+
+        // Obtener el resultado de la consulta
+        $result = $stmt->get_result();
+        $producto = $result->fetch_assoc();
+
+        // Responder con el producto o un error si no se encuentra
+        if ($producto) {
+            echo json_encode(['producto' => $producto['nombre']]);
+        } else {
+            echo json_encode(['error' => 'Producto no encontrado']);
+        }
+    } catch (mysqli_sql_exception $e) {
+        echo json_encode(['error' => 'Error en la consulta: ' . $e->getMessage()]);
+    }
 }
+
 
 ?>

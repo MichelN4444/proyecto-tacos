@@ -20,7 +20,6 @@ if (!cookies.split("; ").some(cookie => cookie.startsWith("login="))) {
 //////////////////Crreacion dinamica de las mesas/////////////////////
 menuVentas.addEventListener('click',()=>{
     contenido.innerHTML = ''
-    console.log ('click en menu');
     //////////////////////Tickets por mesa//////////////////////////////////
     const plantilla = ` 
     <button class="mesa" id='mesa1' ><img src="./img/mesa.png"></button>
@@ -41,7 +40,6 @@ menuVentas.addEventListener('click',()=>{
     fetch('./src/php/api.php?action=cargarProductos')
     .then(response => response.json())
     .then(productos => {
-        console.log(productos);
         mesas.forEach((mesa, i) => {
             mesa.addEventListener('click', () => {
                 
@@ -99,7 +97,6 @@ menuVentas.addEventListener('click',()=>{
                 });
             });
             function cerrarCuenta(index){
-                console.log('3');
                 const ticket = document.querySelector(`.ticket[data-index="${index}"]`);//Los editados
                 const form = ticket.querySelector('form')
 
@@ -167,22 +164,44 @@ menuReportes.addEventListener('click', () => {
     const contenedorNuevo = document.createElement('div');
     contenedorNuevo.setAttribute('id', 'resultados');
 
-    // Crear el contenido HTML para el informe
-    const plantilla = `
-    <h2>Informe de ventas</h2>
-    <p id="productoMasVendido"></p>
-    <p id="mejoresDias"></p>
-    <p id="totalGanancias"></p>`;
-    contenedorNuevo.innerHTML = plantilla;
-
+    
     // Crear el elemento canvas
+    const titulo = `
+        <div class='cabecera'>
+            <h2>Informe de ventas</h2>
+            <button>Exportar pdf</button>
+            <button class="btn-dropdown" id="boton">Reporte</button>
+            <div class="dropdown-content" id="opciones">
+                <a href="#">Semanal</a>
+                <a href="#">Mensual</a>
+                <a href="#">Anual</a>
+            </div>
+        </div>
+    `
+    
+    contenedorNuevo.innerHTML = titulo
     const canvas = document.createElement('canvas');
     canvas.setAttribute('id', 'grafica');
     canvas.setAttribute('width', '784');
     canvas.setAttribute('height', '331');
-
-    // Agregar el canvas al contenedorNuevo
+    
     contenedorNuevo.appendChild(canvas);
+    
+    const plantilla = `
+    <p id="productoMasVendido"></p>
+    <p id="mejoresDias"></p>
+    <p id="totalGanancias"></p><br>
+    <table>
+        <tr>
+            <th>Producto</th>
+            <th>Ventas</th>
+            <th>Ganancia</th>
+        <tr>
+
+    </table>
+    `;
+    // Agregar el canvas al contenedorNuevo
+    contenedorNuevo.innerHTML += plantilla;
 
     // Agregar el contenedor al body o a otro elemento
     contenido.appendChild(contenedorNuevo);
@@ -194,7 +213,6 @@ menuReportes.addEventListener('click', () => {
 
 
 function cerrarSesion(){
-    console.log('cerrando');
     document.cookie = "login=true;expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
     window.location.replace("./index.html");  
 }
