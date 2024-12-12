@@ -44,6 +44,9 @@ switch ($action) {
     case 'cargarVentas':
         cargarVentas();
         break;
+    case 'generarTicket':
+        generarTicket();
+        break;
     default:
         echo json_encode(['error' => 'Invalid action']);
         break;
@@ -358,5 +361,84 @@ function obtenerProductosId() {
     }
 }
 
+function generarTicket(){
+
+    $files = glob(__DIR__ . '/../tickets/*.html');
+    foreach ($files as $file) {
+        if (filemtime($file) < strtotime('-30 days')) { // Eliminar archivos de más de 30 días
+            unlink($file);
+        }
+    }
+
+    $json = file_get_contents('php://input');
+    $data = json_decode($json, true);
+    
+    $ticketHTML = "<html><body>";
+    $ticketHTML .= "<style>
+    @media print {
+        body {
+            margin: 0;
+            padding: 0;
+            width: 8cm; /* Ancho del ticket */
+            font-family: Arial, sans-serif;
+            font-size: 12px; /* Ajusta el tamaño de fuente */
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 16px;
+            margin: 0 0 10px;
+        }
+
+        p {
+            margin: 0 0 5px;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px dashed #000;
+            margin: 10px 0;
+        }
+    }
+</style>";
+
+    $ticketHTML .= "<h1>Ticket de Venta</h1>";
+    $totalGeneral = 0;
+    
+    foreach($data as $venta){
+        $producto = htmlspecialchars($venta['nombre']); // Sanitizar datos
+        $cantidad = (int)$venta['cantidad'];
+        $precio = (float)$venta['precio'];
+        $total = $cantidad * $precio;
+        $totalGeneral += $total;
+
+        // Agregar información al ticket
+        $ticketHTML .= "<p>Producto: {$producto}</p>";
+        $ticketHTML .= "<p>Cantidad: {$cantidad}</p>";
+        $ticketHTML .= "<p>Precio Unitario: $ {$precio}</p>";
+        $ticketHTML .= "<p>Subtotal: $ {$total}</p>";
+        $ticketHTML .= "<hr>";
+    }
+
+    $ticketHTML .= "<h2>Total General: $ {$totalGeneral}</h2>";
+    $ticketHTML .= "</body></html>";
+
+    // Generar archivo de ticket
+    $ticketFileName = 'ticket_' . date('Ymd_His') . '_' . uniqid() . '.html';
+
+    $ticketFilePath = __DIR__ . '/../tickets/' . $ticketFileName;
+
+    if (!is_dir(__DIR__ . '/../tickets')) {
+        mkdir(__DIR__ . '/../tickets', 0755, true);
+    }
+
+    file_put_contents($ticketFilePath, $ticketHTML);
+    $ticketUrl = './src/tickets/' . $ticketFileName;
+
+    echo json_encode([
+        "success" => true,
+        "ticket_html" => $ticketUrl, // Enviar el ticket como HTML
+    ]);
+}
 
 ?>

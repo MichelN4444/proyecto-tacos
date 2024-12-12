@@ -4282,7 +4282,7 @@ const agregarProducto = (recargar) =>{
     xhr.send(datos);
 };
 
-function registrarVenta(venta) {
+function registrarVenta(venta, tickets, form) {
     Swal.fire({
         title: "Estas seguro?",
         text: "No podras cancelar la venta despues!",
@@ -4312,6 +4312,24 @@ function registrarVenta(venta) {
                     form.querySelectorAll('input[type="number"]').forEach(input =>{
                         input.value = 0;
                     });
+                    fetch('./src/php/api.php?action=generarTicket',{
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: venta
+                    })
+                    .then(response => response.json())
+                    .then(data =>{
+                        if (data.success) {
+                            //Nueva ventana
+                            window.open(data.ticket_html, '_blank');
+                        }
+                    });
+                    //checar esot//////////////////////////
+                    // tickets[index] = '';
+                    // minimizar(index);
+                    return 'hecho';
                 } else {
                     console.error('Error: ' + data.error);
                 }
@@ -4324,7 +4342,7 @@ function registrarVenta(venta) {
 }
 
 
-
+//hacerlo sin async
 async function obtenerVentas(){
     try {
         const response = await fetch('./src/php/api.php?action=cargarVentas');
@@ -4464,6 +4482,7 @@ function graficarDatos(productoMasVendido, mejoresDias, totalGanancias) {
 
     // Mostrar el producto más vendido
     const productoDiv = document.getElementById('productoMasVendido');
+    console.log(productoMasVendido);
     if (productoMasVendido) {
         productoDiv.innerHTML = `<h3>Producto más vendido: ${productoMasVendido}</h3><p>Total ventas: ${productoMasVendido.cantidad_total}</p>`;
     } else {
@@ -4507,6 +4526,9 @@ if (!cookies.split("; ").some(cookie => cookie.startsWith("login="))) {
 
 //////////////////Crreacion dinamica de las mesas/////////////////////
 menuVentas.addEventListener('click',()=>{
+
+    console.log(tickets);
+
     contenido.innerHTML = '';
     //////////////////////Tickets por mesa//////////////////////////////////
     const plantilla = ` 
@@ -4587,9 +4609,9 @@ menuVentas.addEventListener('click',()=>{
             function cerrarCuenta(index){
                 const ticket = document.querySelector(`.ticket[data-index="${index}"]`);//Los editados
                 const form = ticket.querySelector('form');
-
+                let venta;
                 const productosVenta = [];
-        
+                
                 form.querySelectorAll('input[type="number"]').forEach(input => {
                     const productoNombre = input.name;
                     const cantidad = parseInt(input.value, 10);
@@ -4605,12 +4627,14 @@ menuVentas.addEventListener('click',()=>{
                         });
                     }
                 });
-                const venta = JSON.stringify(productosVenta);
-                
-                registrarVenta(venta);
-                form.querySelectorAll('input[type="number"]').forEach(input =>{
-                    input.value = 0;
-                });
+                venta = JSON.stringify(productosVenta);
+                console.log(venta);
+                registrarVenta(venta, tickets[index], form);
+                if (registrarVenta == 'hecho') {
+                    tickets[index] = '';
+                    minimizar(index);
+                }
+
                 minimizar(index);
             }
             window.cerrarCuenta = cerrarCuenta;

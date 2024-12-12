@@ -1,4 +1,4 @@
-export function registrarVenta(venta) {
+export function registrarVenta(venta, tickets, form) {
     Swal.fire({
         title: "Estas seguro?",
         text: "No podras cancelar la venta despues!",
@@ -28,6 +28,24 @@ export function registrarVenta(venta) {
                     form.querySelectorAll('input[type="number"]').forEach(input =>{
                         input.value = 0;
                     })
+                    fetch('./src/php/api.php?action=generarTicket',{
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: venta
+                    })
+                    .then(response => response.json())
+                    .then(data =>{
+                        if (data.success) {
+                            //Nueva ventana
+                            window.open(data.ticket_html, '_blank')
+                        }
+                    })
+                    //checar esot//////////////////////////
+                    // tickets[index] = '';
+                    // minimizar(index);
+                    return 'hecho';
                 } else {
                     console.error('Error: ' + data.error);
                 }
@@ -45,7 +63,7 @@ export const ventas = () =>{
 }
 
 
-
+//hacerlo sin async
 export async function obtenerVentas(){
     try {
         const response = await fetch('./src/php/api.php?action=cargarVentas');
@@ -198,6 +216,7 @@ function graficarDatos(productoMasVendido, mejoresDias, totalGanancias) {
 
     // Mostrar el producto más vendido
     const productoDiv = document.getElementById('productoMasVendido');
+    console.log(productoMasVendido);
     if (productoMasVendido) {
         productoDiv.innerHTML = `<h3>Producto más vendido: ${productoMasVendido}</h3><p>Total ventas: ${productoMasVendido.cantidad_total}</p>`;
     } else {

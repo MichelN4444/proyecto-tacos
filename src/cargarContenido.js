@@ -19,6 +19,9 @@ if (!cookies.split("; ").some(cookie => cookie.startsWith("login="))) {
 
 //////////////////Crreacion dinamica de las mesas/////////////////////
 menuVentas.addEventListener('click',()=>{
+
+    console.log(tickets);
+
     contenido.innerHTML = ''
     //////////////////////Tickets por mesa//////////////////////////////////
     const plantilla = ` 
@@ -99,9 +102,9 @@ menuVentas.addEventListener('click',()=>{
             function cerrarCuenta(index){
                 const ticket = document.querySelector(`.ticket[data-index="${index}"]`);//Los editados
                 const form = ticket.querySelector('form')
-
+                let venta;
                 const productosVenta = [];
-        
+                
                 form.querySelectorAll('input[type="number"]').forEach(input => {
                     const productoNombre = input.name;
                     const cantidad = parseInt(input.value, 10);
@@ -117,12 +120,14 @@ menuVentas.addEventListener('click',()=>{
                         });
                     }
                 });
-                const venta = JSON.stringify(productosVenta);
-                
-                registrarVenta(venta);
-                form.querySelectorAll('input[type="number"]').forEach(input =>{
-                    input.value = 0;
-                })
+                venta = JSON.stringify(productosVenta);
+                console.log(venta);
+                const registroVenta = registrarVenta(venta, tickets[index], form);
+                if (registrarVenta == 'hecho') {
+                    tickets[index] = '';
+                    minimizar(index);
+                }
+
                 minimizar(index);
             }
             window.cerrarCuenta = cerrarCuenta;
