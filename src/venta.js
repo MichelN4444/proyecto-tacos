@@ -59,10 +59,77 @@ export function registrarVenta(venta, tickets, form) {
 
 /////////////////PARA ANALIZAR LAS VENTAS/////////////////77
 export const ventas = () =>{
+    //Obteniendo todas las ventas
+    fetch('./src/php/api.php?action=cargarVentas')
+    .then(response => response.json())
+    .then(ventas => {
+        mejorProducto(ventas)
+        mejoresDias(ventas)
+    })
 
 }
 
+function mejorProducto(ventas){
+    let contador = {};//objeto
+    let valorMayor = 0;
+    let idMayor;
+    ventas.forEach(venta=>{
+        const idProducto = venta.producto_id;
+        let cantidad = venta.cantidad;
+        cantidad  = parseFloat(cantidad);
 
+        if (contador[idProducto]) {
+            contador[idProducto].cantidad += cantidad;
+        }else{
+            contador[idProducto] = {cantidad: cantidad};
+        }
+        
+    })
+    console.log(contador);
+    // Opcional: Recorre y muestra las cantidades por producto
+    for (const id in contador) {
+        if (contador[id].cantidad > valorMayor) {
+            idMayor = id;
+            valorMayor = contador[id].cantidad;
+        }
+    }
+
+    let idjson = { id_producto: idMayor };
+
+    // Realizamos la petición asíncrona
+    fetch('./src/php/api.php?action=obtenerProductosId', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(idjson),
+    })
+    .then(response => response.json())
+    .then(data=>{
+
+        document.getElementById('productoMasVendido').innerHTML = `
+        <h3>Producto estrella:</h3> <p>${data.producto} con ${valorMayor} ventas</p>`;
+    })
+}
+
+function mejoresDias(ventas){
+    let diasDeLaSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+    // Crear un objeto Date a partir de la cadena
+    let contador = {};
+    
+    ventas.forEach(venta =>{
+        let fechaVenta = venta.fecha_venta;
+        let ventaId = venta.venta_id;
+        console.log(ventaId);
+        let fecha = new Date(fechaVenta);
+        let diaDeLaSemana = fecha.getDay();
+
+        if(!contador[ventaId]){
+            contador[ventaId] = fechaVenta;
+        }
+        console.log(`El día de la semasna es: ${diasDeLaSemana[diaDeLaSemana]}`);
+    })
+}
 //hacerlo sin async
 export async function obtenerVentas(){
     try {
@@ -233,11 +300,11 @@ function graficarDatos(productoMasVendido, mejoresDias, totalGanancias) {
     } else {
         diasDiv.innerHTML = `<h3>No se encontraron días con ventas destacadas.</h3>`;
     }
-
+    const formatoMoneda = new Intl.NumberFormat('es-MX', {style: 'currency', currency: 'MXN'});
     // Mostrar las ganancias totales
     const gananciasDiv = document.getElementById('totalGanancias');
     if (totalGanancias !== undefined) {
-        gananciasDiv.innerHTML = `<h3>Ganancias totales: $${totalGanancias.toFixed(2)}</h3>`;
+        gananciasDiv.innerHTML = `<h3>Ganancias totales: ${formatoMoneda.format(totalGanancias.toFixed(2))}</h3>`;
     } else {
         gananciasDiv.innerHTML = `<h3>No se encontraron datos de ganancias.</h3>`;
     }

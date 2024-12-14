@@ -1,5 +1,5 @@
 import {formulario, llenarCategorias, agregarProducto, tabla, btnEditarProductos} from './menuDinamico';
-import { obtenerVentas, registrarVenta } from './venta';
+import { obtenerVentas, registrarVenta, ventas } from './venta';
 import { agregarCategorias } from './menuDinamico';
 
 const menuVentas = document.getElementById('ventas');
@@ -72,7 +72,9 @@ menuVentas.addEventListener('click',()=>{
                                 const valor = tickets[i][nombreProducto] || 0;
                                 html += `
                                 <label>${producto.producto_nombre}</label>
-                                <input type="number" name="${nombreProducto}" value="${valor}" min="0"><br>`;
+                                <input type="number" class="inputPro" name="${nombreProducto}" value="${valor}" min="0"><br>
+                                <label>Sin..</label>
+                                <input type="text">`;
                             } else {
                                 console.warn(`Producto sin nombre encontrado: ${JSON.stringify(producto)}`);
                             }
@@ -177,9 +179,9 @@ menuReportes.addEventListener('click', () => {
             <button>Exportar pdf</button>
             <button class="btn-dropdown" id="boton">Reporte</button>
             <div class="dropdown-content" id="opciones">
+                <a href="#">Diario</a>
                 <a href="#">Semanal</a>
                 <a href="#">Mensual</a>
-                <a href="#">Anual</a>
             </div>
         </div>
     `
@@ -211,7 +213,7 @@ menuReportes.addEventListener('click', () => {
     // Agregar el contenedor al body o a otro elemento
     contenido.appendChild(contenedorNuevo);
 
-    obtenerVentas();
+    ventas();
 
 });
 
