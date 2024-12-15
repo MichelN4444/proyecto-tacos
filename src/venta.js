@@ -63,8 +63,10 @@ export const ventas = () =>{
     fetch('./src/php/api.php?action=cargarVentas')
     .then(response => response.json())
     .then(ventas => {
-        mejorProducto(ventas)
-        mejoresDias(ventas)
+        const productoEstrella = mejorProducto(ventas)
+        const mejoresDiasAgrupadas = mejoresDias(ventas)
+        const total = totalGanancias(ventas)
+
     })
 
 }
@@ -85,7 +87,6 @@ function mejorProducto(ventas){
         }
         
     })
-    console.log(contador);
     // Opcional: Recorre y muestra las cantidades por producto
     for (const id in contador) {
         if (contador[id].cantidad > valorMayor) {
@@ -108,204 +109,108 @@ function mejorProducto(ventas){
     .then(data=>{
 
         document.getElementById('productoMasVendido').innerHTML = `
-        <h3>Producto estrella:</h3> <p>${data.producto} con ${valorMayor} ventas</p>`;
+        <h2>Producto estrella:</h2> <p>${data.producto} con ${valorMayor} ventas</p><br>`;
     })
 }
 
 function mejoresDias(ventas){
     let diasDeLaSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
     // Crear un objeto Date a partir de la cadena
-    let contador = {};
+    let obtenerTotalVentas = {};
+    let ventasPorDia = {};
     
     ventas.forEach(venta =>{
         let fechaVenta = venta.fecha_venta;
         let ventaId = venta.venta_id;
-        console.log(ventaId);
+
         let fecha = new Date(fechaVenta);
-        let diaDeLaSemana = fecha.getDay();
+        let diaDeLaSemana = diasDeLaSemana[fecha.getDay()];
 
-        if(!contador[ventaId]){
-            contador[ventaId] = fechaVenta;
-        }
-        console.log(`El día de la semasna es: ${diasDeLaSemana[diaDeLaSemana]}`);
-    })
-}
-//hacerlo sin async
-export async function obtenerVentas(){
-    try {
-        const response = await fetch('./src/php/api.php?action=cargarVentas');
-        const ventas = await response.json();
-
-        // Esperar la resolución de la promesa de obtenerProductoMasVendido
-        const productoMasVendido = await obtenerProductoMasVendido(ventas);
-        const mejoresDias = obtenerMejoresDias(ventas);
-        const totalGanancias = calcularTotalGanancias(ventas);
-
-        // Mostrar resultados en la página
-        mostrarResultados(productoMasVendido, mejoresDias, totalGanancias);
-
-        // Graficar resultados
-        graficarDatos(productoMasVendido, mejoresDias, totalGanancias);
-    } catch (error) {
-        console.log(error);
-    }
-}
-
-
-function obtenerVentasAgrupadas(ventas) {
-    return ventas.reduce((acc, venta) => {
-        // Si no existe la clave 'venta_id', la creamos
-        if (!acc[venta.venta_id]) {
-            acc[venta.venta_id] = [];
-        }
-        // Agregamos la venta al grupo correspondiente
-        acc[venta.venta_id].push(venta);
-        return acc;
-    }, {});
-}
-
-async function obtenerProductoMasVendido(ventas) {
-    const contadorProductos = {}; // objeto
-
-    ventas.forEach(venta => {
-        const productoId = venta.producto_id;
-        if (contadorProductos[productoId]) {
-            contadorProductos[productoId] += venta.cantidad;
-        } else {
-            contadorProductos[productoId] = venta.cantidad;
-        }
-    });
-
-    // Encontrar el producto más vendido
-    let productoMasVendidoId = Object.keys(contadorProductos).reduce((a, b) => contadorProductos[a] > contadorProductos[b] ? a : b);
-
-    let idjson = { id_producto: productoMasVendidoId };
-
-    // Realizamos la petición asíncrona
-    const response = await fetch('./src/php/api.php?action=obtenerProductosId', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(idjson),
-    });
-
-    // Esperamos la respuesta JSON
-    const data = await response.json();
-
-    // Retornamos el producto más vendido
-    let productoMasVendido= data.producto
-    return productoMasVendido;//Hay que agregarle cuantas ventas a hecho
-}
-
-function obtenerMejoresDias(ventas) {
-    const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-    const contadorDias = {};
-    const ventasContadas = new Set();
-
-    console.log(ventas);
-    ventas.forEach(venta => {
-        const fecha = new Date(venta.fecha_venta);//Fecha venta
-        const ventaId = venta.venta_id;
-
-        //console.log(diaSemana);
-        if (!ventasContadas.has(ventaId)) {//entonces si no se encuentra el id
-            ventasContadas.add(ventaId)//Se cuenta o se registra
-
-            const diaSemana = fecha.getDay();//Se inicializa el numero de dia
-            if (contadorDias[diaSemana]) {
-                contadorDias[diaSemana] += 1; // Aumentamos el contador para ese día
-            } else {
-                contadorDias[diaSemana] = 1; // Inicializamos el contador para ese día
+        if(!obtenerTotalVentas[ventaId]){
+            obtenerTotalVentas[ventaId] = diaDeLaSemana;
+            if (!ventasPorDia[diaDeLaSemana]) {
+                ventasPorDia[diaDeLaSemana] = 0;
             }
+            ventasPorDia[diaDeLaSemana]++;
         }
-    });
+    })
+    const totalVentas = Object.keys(obtenerTotalVentas).length;//Devuelve las claves en string
 
-    const mejoresDias = Object.keys(contadorDias).map(dia => ({
-        dia: diasSemana[dia],
-        ventas: contadorDias[dia]
-    }));
+    //Ordenar 
+    let ventasOrdenadas = Object.entries(ventasPorDia);//Convertimos en string el objeto
+    //.sort Ordena automaticamente el arreglo
 
-    return mejoresDias;//Aqui ya no se repiten ventas
+    ventasOrdenadas.sort((a,b)=>b[1] - a[1])
+
+    /*
+        [["Lunes", 5], ["Martes", 3], ["Miércoles", 7]]
+        .sort((a,b)) = nos dice que tendremos 2 valeres uno a y otro b, ya que vamos a comparar
+        b[1] = A NUESTRA VARIABLE B EN LA POSICION 1 ES DECIR COMPARAMOS VALORES NO CLAVES
+        a[1] = De igual forma comparamos la primer variable que seria MARTES pero en la pos 1 QUE ES 3
+        AL HACER LA RESTA SI ES NEGATIVO VA A IR DESPUES POR LO QUE EL MAYOR QUEDA AL INICIO 
+    */
+    let html = `<h2>Días con más ventas:</h2>`;
+    ventasOrdenadas.forEach((venta, i)=>{
+        let operacion = venta[1] * totalVentas / 100 * 100; 
+        html+=`    
+            <p>${i+1})<b>${venta[0]}</b> con ${operacion.toFixed(1)}% de las ventas totales</p>
+        `;
+    })
+    html += `<p>De <b>${totalVentas}</b> ventas totales</p>`
+    document.getElementById('mejoresDias').innerHTML = html;
+    console.log("Total de ventas: ", totalVentas);
+    let dias = Object.keys(ventasPorDia);
+    let ventasTo = Object.values(ventasPorDia);
+    graficarVentas(dias,ventasTo);
 }
 
-function calcularTotalGanancias(ventas) {
+function totalGanancias(ventas){
     let total = 0;
+    const formatoMoneda = new Intl.NumberFormat('es-MX', {style: 'currency', currency: 'MXN'});
 
     ventas.forEach(venta => {
         total += venta.precio * venta.cantidad;
     });
 
-    return total;
+    document.getElementById('totalGanancias').innerHTML=`
+        <br><h2>El total de ganancias de las ventas es: </h2>
+        <p>${formatoMoneda.format(total)}</p>
+    `
 }
 
-
-function mostrarResultados(productoMasVendido, mejoresDias, totalGanancias) {
-
-    document.getElementById('productoMasVendido').innerText = `Producto más venndido: ${productoMasVendido}`;
-    let dias;
-    let ventas;
-    mejoresDias.forEach( dia=>{
-        dias = dia.dia;
-        ventas= dia.ventas;
-    })
-    document.getElementById('mejoresDias').innerText = `Mejores días: ${dias} con ${ventas} ventas`;
-    document.getElementById('totalGanancias').innerText = `Tots al de ganancias: $${totalGanancias.toFixed(2)}`;
-}
-
-function graficarDatos(productoMasVendido, mejoresDias, totalGanancias) {
+function graficarVentas(dias, ventasTo){
     const ctx = document.getElementById('grafica').getContext('2d');
-
-    // Graficar las ventas por día
-    const dias = mejoresDias.map(dia => dia.dia);
-    const cantidades = mejoresDias.map(dia => dia.ventas);
-
-    new Chart(ctx, {
-        type: 'bar',  // Puedes cambiar el tipo de gráfico
+    const ventasChart = new Chart(ctx, {
+        type: 'line',
         data: {
-            labels: dias,
+            labels: dias, //eje X
             datasets: [{
-                label: 'Ventas por Día',
-                data: cantidades,
-                backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 1
+                label: 'Ventas por día', // Título de la línea
+                data: ventasTo, // Datos de ventas en el eje Y
+                borderColor: '#042286',//Color de la linea
+                backgroundColor: '$870469', // Color de los puntos
+                tension: 0.1, 
+                fill: false // Rellenar debajo de la línea
             }]
         },
         options: {
+            responsive: true, // Hace que el gráfico sea responsivo
             scales: {
-                y: {
-                    beginAtZero: true
+                x: { // Configuración del eje X
+                    title: {
+                        display: true,
+                        text: 'Días'
+                    }
+                },
+                y: { // Configuración del eje Y
+                    title: {
+                        display: true,
+                        text: 'Ventas'
+                    },
+                    //beginAtZero: true // Asegura que el eje Y empiece desde cero
                 }
             }
         }
     });
 
-    // Mostrar el producto más vendido
-    const productoDiv = document.getElementById('productoMasVendido');
-    console.log(productoMasVendido);
-    if (productoMasVendido) {
-        productoDiv.innerHTML = `<h3>Producto más vendido: ${productoMasVendido}</h3><p>Total ventas: ${productoMasVendido.cantidad_total}</p>`;
-    } else {
-        productoDiv.innerHTML = `<h3>No se encontró el producto más vendido.</h3>`;
-    }
-
-    // Mostrar los mejores días
-    const diasDiv = document.getElementById('mejoresDias');
-    if (mejoresDias && mejoresDias.length > 0) {
-        diasDiv.innerHTML = `<h3>Mejores días para vender:</h3>`;
-        mejoresDias.forEach(dia => {
-            diasDiv.innerHTML += `<p>${dia.dia}: ${dia.cantidad} ventas</p>`;
-        });
-    } else {
-        diasDiv.innerHTML = `<h3>No se encontraron días con ventas destacadas.</h3>`;
-    }
-    const formatoMoneda = new Intl.NumberFormat('es-MX', {style: 'currency', currency: 'MXN'});
-    // Mostrar las ganancias totales
-    const gananciasDiv = document.getElementById('totalGanancias');
-    if (totalGanancias !== undefined) {
-        gananciasDiv.innerHTML = `<h3>Ganancias totales: ${formatoMoneda.format(totalGanancias.toFixed(2))}</h3>`;
-    } else {
-        gananciasDiv.innerHTML = `<h3>No se encontraron datos de ganancias.</h3>`;
-    }
 }

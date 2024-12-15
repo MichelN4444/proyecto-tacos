@@ -4349,6 +4349,8 @@ const ventas = () =>{
     .then(ventas => {
         mejorProducto(ventas);
         mejoresDias(ventas);
+        totalGanancias(ventas);
+
     });
 
 };
@@ -4369,7 +4371,6 @@ function mejorProducto(ventas){
         }
         
     });
-    console.log(contador);
     // Opcional: Recorre y muestra las cantidades por producto
     for (const id in contador) {
         if (contador[id].cantidad > valorMayor) {
@@ -4392,27 +4393,110 @@ function mejorProducto(ventas){
     .then(data=>{
 
         document.getElementById('productoMasVendido').innerHTML = `
-        <h3>Producto estrella:</h3> <p>${data.producto} con ${valorMayor} ventas</p>`;
+        <h2>Producto estrella:</h2> <p>${data.producto} con ${valorMayor} ventas</p><br>`;
     });
 }
 
 function mejoresDias(ventas){
     let diasDeLaSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
     // Crear un objeto Date a partir de la cadena
-    let contador = {};
+    let obtenerTotalVentas = {};
+    let ventasPorDia = {};
     
     ventas.forEach(venta =>{
         let fechaVenta = venta.fecha_venta;
         let ventaId = venta.venta_id;
-        console.log(ventaId);
-        let fecha = new Date(fechaVenta);
-        let diaDeLaSemana = fecha.getDay();
 
-        if(!contador[ventaId]){
-            contador[ventaId] = fechaVenta;
+        let fecha = new Date(fechaVenta);
+        let diaDeLaSemana = diasDeLaSemana[fecha.getDay()];
+
+        if(!obtenerTotalVentas[ventaId]){
+            obtenerTotalVentas[ventaId] = diaDeLaSemana;
+            if (!ventasPorDia[diaDeLaSemana]) {
+                ventasPorDia[diaDeLaSemana] = 0;
+            }
+            ventasPorDia[diaDeLaSemana]++;
         }
-        console.log(`El día de la semasna es: ${diasDeLaSemana[diaDeLaSemana]}`);
     });
+    const totalVentas = Object.keys(obtenerTotalVentas).length;//Devuelve las claves en string
+
+    //Ordenar 
+    let ventasOrdenadas = Object.entries(ventasPorDia);//Convertimos en string el objeto
+    //.sort Ordena automaticamente el arreglo
+
+    ventasOrdenadas.sort((a,b)=>b[1] - a[1]);
+
+    /*
+        [["Lunes", 5], ["Martes", 3], ["Miércoles", 7]]
+        .sort((a,b)) = nos dice que tendremos 2 valeres uno a y otro b, ya que vamos a comparar
+        b[1] = A NUESTRA VARIABLE B EN LA POSICION 1 ES DECIR COMPARAMOS VALORES NO CLAVES
+        a[1] = De igual forma comparamos la primer variable que seria MARTES pero en la pos 1 QUE ES 3
+        AL HACER LA RESTA SI ES NEGATIVO VA A IR DESPUES POR LO QUE EL MAYOR QUEDA AL INICIO 
+    */
+    let html = `<h2>Días con más ventas:</h2>`;
+    ventasOrdenadas.forEach((venta, i)=>{
+        let operacion = venta[1] * totalVentas / 100 * 100; 
+        html+=`    
+            <p>${i+1})<b>${venta[0]}</b> con ${operacion.toFixed(1)}% de las ventas totales</p>
+        `;
+    });
+    html += `<p>De <b>${totalVentas}</b> ventas totales</p>`;
+    document.getElementById('mejoresDias').innerHTML = html;
+    console.log("Total de ventas: ", totalVentas);
+    let dias = Object.keys(ventasPorDia);
+    let ventasTo = Object.values(ventasPorDia);
+    graficarVentas(dias,ventasTo);
+}
+
+function totalGanancias(ventas){
+    let total = 0;
+    const formatoMoneda = new Intl.NumberFormat('es-MX', {style: 'currency', currency: 'MXN'});
+
+    ventas.forEach(venta => {
+        total += venta.precio * venta.cantidad;
+    });
+
+    document.getElementById('totalGanancias').innerHTML=`
+        <br><h2>El total de ganancias de las ventas es: </h2>
+        <p>${formatoMoneda.format(total)}</p>
+    `;
+}
+
+function graficarVentas(dias, ventasTo){
+    const ctx = document.getElementById('grafica').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: dias, //eje X
+            datasets: [{
+                label: 'Ventas por día', // Título de la línea
+                data: ventasTo, // Datos de ventas en el eje Y
+                borderColor: '#042286',//Color de la linea
+                backgroundColor: '$870469', // Color de los puntos
+                tension: 0.1, 
+                fill: false // Rellenar debajo de la línea
+            }]
+        },
+        options: {
+            responsive: true, // Hace que el gráfico sea responsivo
+            scales: {
+                x: { // Configuración del eje X
+                    title: {
+                        display: true,
+                        text: 'Días'
+                    }
+                },
+                y: { // Configuración del eje Y
+                    title: {
+                        display: true,
+                        text: 'Ventas'
+                    },
+                    //beginAtZero: true // Asegura que el eje Y empiece desde cero
+                }
+            }
+        }
+    });
+
 }
 
 const menuVentas = document.getElementById('ventas');
