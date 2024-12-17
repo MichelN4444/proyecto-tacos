@@ -4282,6 +4282,18 @@ const agregarProducto = (recargar) =>{
     xhr.send(datos);
 };
 
+function obtenerFecha(periodo, fecha){
+    console.log('hasta que se ejecute');
+    console.log(`Periodo seleccionado: ${periodo}`);
+    fetch('./src/php/api.php?action=cargarVentas')
+    .then(response => response.json())
+    .then(ventas => {
+        mejorProducto(ventas);
+        mejoresDias(ventas);
+        totalGanancias(ventas);
+    });
+}
+//Arregglar la parte superior
 function registrarVenta(venta, tickets, form) {
     Swal.fire({
         title: "Estas seguro?",
@@ -4341,7 +4353,7 @@ function registrarVenta(venta, tickets, form) {
     });
 }
 
-/////////////////PARA ANALIZAR LAS VENTAS/////////////////77
+/////////////////PARA ANALIZAR LAS VENTAS/////////////////
 const ventas = () =>{
     //Obteniendo todas las ventas
     fetch('./src/php/api.php?action=cargarVentas')
@@ -4350,9 +4362,7 @@ const ventas = () =>{
         mejorProducto(ventas);
         mejoresDias(ventas);
         totalGanancias(ventas);
-
     });
-
 };
 
 function mejorProducto(ventas){
@@ -4445,7 +4455,7 @@ function mejoresDias(ventas){
     console.log("Total de ventas: ", totalVentas);
     let dias = Object.keys(ventasPorDia);
     let ventasTo = Object.values(ventasPorDia);
-    graficarVentas(dias,ventasTo);
+    graficarVentas(dias,ventasTo);  
 }
 
 function totalGanancias(ventas){
@@ -4454,7 +4464,7 @@ function totalGanancias(ventas){
 
     ventas.forEach(venta => {
         total += venta.precio * venta.cantidad;
-    });
+    }); 
 
     document.getElementById('totalGanancias').innerHTML=`
         <br><h2>El total de ganancias de las ventas es: </h2>
@@ -4513,6 +4523,12 @@ if (!cookies.split("; ").some(cookie => cookie.startsWith("login="))) {
     window.location.replace("./index.html");
 }
 
+//////////////////////////////////////////7
+function toggleMenu() {
+    var menu = document.querySelector('.menu');
+    menu.classList.toggle('active');
+}
+window.toggleMenu = toggleMenu;
 
 //////////////////Crreacion dinamica de las mesas/////////////////////
 menuVentas.addEventListener('click',()=>{
@@ -4672,17 +4688,30 @@ menuReportes.addEventListener('click', () => {
     // Crear el elemento canvas
     const titulo = `
         <div class='cabecera'>
-            <h2>Informe de ventas</h2>
-            <button>Exportar pdf</button>
-            <button class="btn-dropdown" id="boton">Reporte</button>
-            <div class="dropdown-content" id="opciones">
-                <a href="#">Diario</a>
-                <a href="#">Semanal</a>
-                <a href="#">Mensual</a>
+            <h2>Informe de ventass</h2>
+            <div class="botonesVentas">
+                <button id="botonPdf">Exportar pdf
+                    <i class="fi fi-rs-file-pdf" id="icono-pdf"></i>
+                </button>
+                <div class="dropdown">
+                    <button class="btn-dropdown" id="boton">
+                        <i class="fi fi-br-calendar-day" id="icono-calendario"></i>
+                        <span id="boton-text">Diario</span>
+                        <i class="fi fi-rr-angle-small-down" id="icono-flechaAbajo"></i>
+                    </button>
+                    <div class="dropdown-content" id="opciones">
+                        <a href="#" id="diario">Diario</a>
+                        <a href="#" id="semanal">Semanal</a>
+                        <a href="#" id="mensual">Mensual</a>
+                    </div>
+                </div>
+            </div>
+            <div id="periodo-selector">
+                <!-- Formulario dinámico aparecerá aquí -->
             </div>
         </div>
     `;
-    
+
     contenedorNuevo.innerHTML = titulo;
     const canvas = document.createElement('canvas');
     canvas.setAttribute('id', 'grafica');
@@ -4704,11 +4733,68 @@ menuReportes.addEventListener('click', () => {
 
     </table>
     `;
+
     // Agregar el canvas al contenedorNuevo
     contenedorNuevo.innerHTML += plantilla;
 
     // Agregar el contenedor al body o a otro elemento
     contenido.appendChild(contenedorNuevo);
+
+
+    // Variables
+    const boton = document.getElementById('boton');
+    const opciones = document.getElementById('opciones');
+    const periodoSelector = document.getElementById('periodo-selector');
+
+    // Mostrar/ocultar opciones del dropdown
+    boton.addEventListener('click', () => {
+        opciones.classList.toggle('show');
+    });
+    function actualizarSelector(periodo) {
+        let html = '';
+        if (periodo === 'diario') {
+            html = `
+                <label for="dia">Seleccionar día:</label>
+                <input type="date" id="dia">
+            `;
+        } else if (periodo === 'semanal') {
+            html = `
+                <label for="semana">Seleccionar semana:</label>
+                <input type="week" id="semana">
+            `;
+        } else if (periodo === 'mensual') {
+            html = `
+                <label for="mes">Seleccionar mes:</label>
+                <input type="month" id="mes">
+            `;
+        }
+        periodoSelector.innerHTML = html;
+         // Agregar evento de cambio al nuevo campo de entrada
+        const inputFecha = periodoSelector.querySelector('input');
+        inputFecha.addEventListener('change', () => {
+            inputFecha.value; // Obtener el valor seleccionado
+            obtenerFecha(periodo); // Pasar el valor a una función
+        });
+    }
+
+    document.getElementById('diario').addEventListener('click', () => {
+        document.getElementById('boton-text').textContent = 'Diario';
+        
+        actualizarSelector('diario');
+        opciones.classList.remove('show');  // Ocultar el dropdown
+    });
+
+    document.getElementById('semanal').addEventListener('click', () => {
+        document.getElementById('boton-text').textContent = 'Semanal';
+        actualizarSelector('semanal');
+        opciones.classList.remove('show'); 
+    });
+
+    document.getElementById('mensual').addEventListener('click', () => {
+        document.getElementById('boton-text').textContent = 'Mensual';
+        actualizarSelector('mensual');
+        opciones.classList.remove('show'); 
+    });
 
     ventas();
 

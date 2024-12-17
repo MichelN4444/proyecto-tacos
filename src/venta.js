@@ -1,3 +1,15 @@
+export function obtenerFecha(periodo, fecha){
+    console.log('hasta que se ejecute');
+    console.log(`Periodo seleccionado: ${periodo}`);
+    fetch('./src/php/api.php?action=cargarVentas')
+    .then(response => response.json())
+    .then(ventas => {
+        mejorProducto(ventas)
+        mejoresDias(ventas, fecha)
+        totalGanancias(ventas)
+    })
+}
+//Arregglar la parte superior
 export function registrarVenta(venta, tickets, form) {
     Swal.fire({
         title: "Estas seguro?",
@@ -57,18 +69,16 @@ export function registrarVenta(venta, tickets, form) {
     });
 }
 
-/////////////////PARA ANALIZAR LAS VENTAS/////////////////77
+/////////////////PARA ANALIZAR LAS VENTAS/////////////////
 export const ventas = () =>{
     //Obteniendo todas las ventas
     fetch('./src/php/api.php?action=cargarVentas')
     .then(response => response.json())
     .then(ventas => {
-        const productoEstrella = mejorProducto(ventas)
-        const mejoresDiasAgrupadas = mejoresDias(ventas)
-        const total = totalGanancias(ventas)
-
+        mejorProducto(ventas)
+        mejoresDias(ventas)
+        totalGanancias(ventas)
     })
-
 }
 
 function mejorProducto(ventas){
@@ -161,7 +171,7 @@ function mejoresDias(ventas){
     console.log("Total de ventas: ", totalVentas);
     let dias = Object.keys(ventasPorDia);
     let ventasTo = Object.values(ventasPorDia);
-    graficarVentas(dias,ventasTo);
+    graficarVentas(dias,ventasTo);  
 }
 
 function totalGanancias(ventas){
@@ -170,7 +180,7 @@ function totalGanancias(ventas){
 
     ventas.forEach(venta => {
         total += venta.precio * venta.cantidad;
-    });
+    }); 
 
     document.getElementById('totalGanancias').innerHTML=`
         <br><h2>El total de ganancias de las ventas es: </h2>
