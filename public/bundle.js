@@ -4283,14 +4283,16 @@ const agregarProducto = (recargar) =>{
 };
 
 function obtenerFecha(periodo, fecha){
-    console.log('hasta que se ejecute');
-    console.log(`Periodo seleccionado: ${periodo}`);
+    console.log(periodo);
+    console.log(fecha);
+    
+    console.log('se activa');
     fetch('./src/php/api.php?action=cargarVentas')
     .then(response => response.json())
     .then(ventas => {
-        mejorProducto(ventas);
-        mejoresDias(ventas);
-        totalGanancias(ventas);
+        // mejorProducto(ventas)
+        // mejoresDias(ventas)
+        totalGanancias(ventas, fecha);
     });
 }
 //Arregglar la parte superior
@@ -4445,9 +4447,9 @@ function mejoresDias(ventas){
     */
     let html = `<h2>Días con más ventas:</h2>`;
     ventasOrdenadas.forEach((venta, i)=>{
-        let operacion = venta[1] * totalVentas / 100 * 100; 
+        let operacion = (venta[1] / totalVentas) * 100; 
         html+=`    
-            <p>${i+1})<b>${venta[0]}</b> con ${operacion.toFixed(1)}% de las ventas totales</p>
+            <p>${i+1})<b>${venta[0]}</b> con ${Math.round(operacion.toFixed(2))}% de las ventas totales</p>
         `;
     });
     html += `<p>De <b>${totalVentas}</b> ventas totales</p>`;
@@ -4458,18 +4460,35 @@ function mejoresDias(ventas){
     graficarVentas(dias,ventasTo);  
 }
 
-function totalGanancias(ventas){
+function totalGanancias(ventas, fechaFiltro){
     let total = 0;
+
     const formatoMoneda = new Intl.NumberFormat('es-MX', {style: 'currency', currency: 'MXN'});
-
-    ventas.forEach(venta => {
-        total += venta.precio * venta.cantidad;
-    }); 
-
-    document.getElementById('totalGanancias').innerHTML=`
-        <br><h2>El total de ganancias de las ventas es: </h2>
-        <p>${formatoMoneda.format(total)}</p>
-    `;
+    if (fechaFiltro) {
+        console.log(fechaFiltro);
+        const ventasFiltradas = ventas.filter(venta => {
+            const fechaSinHora = venta.fecha_venta.split(' ')[0];
+            return fechaSinHora === fechaFiltro;
+        });
+        ventasFiltradas.forEach(venta =>{
+            total+=parseFloat(venta.precio) * parseInt(venta.cantidad);
+        });
+        
+        document.getElementById('totalGanancias').innerHTML=`
+            <br><h2>El total de ganancias en la fecha ${fechaFiltro} es: </h2>
+            <p>${formatoMoneda.format(total)}</p>
+        `;
+    }else {
+        console.log(ventas);
+        ventas.forEach(venta => {
+            total += venta.precio * venta.cantidad;
+        }); 
+    
+        document.getElementById('totalGanancias').innerHTML=`
+            <br><h2>El total de ganancias de las ventas es: </h2>
+            <p>${formatoMoneda.format(total)}</p>
+        `;
+    }
 }
 
 function graficarVentas(dias, ventasTo){
@@ -4750,6 +4769,9 @@ menuReportes.addEventListener('click', () => {
     boton.addEventListener('click', () => {
         opciones.classList.toggle('show');
     });
+
+    // Función para actualizar el selector de periodo
+    let valorSeleccionado;
     function actualizarSelector(periodo) {
         let html = '';
         if (periodo === 'diario') {
@@ -4772,8 +4794,8 @@ menuReportes.addEventListener('click', () => {
          // Agregar evento de cambio al nuevo campo de entrada
         const inputFecha = periodoSelector.querySelector('input');
         inputFecha.addEventListener('change', () => {
-            inputFecha.value; // Obtener el valor seleccionado
-            obtenerFecha(periodo); // Pasar el valor a una función
+            valorSeleccionado = inputFecha.value; // Obtener el valor seleccionado
+            obtenerFecha(periodo, valorSeleccionado); // Pasar el valor a una función
         });
     }
 
@@ -4795,6 +4817,7 @@ menuReportes.addEventListener('click', () => {
         actualizarSelector('mensual');
         opciones.classList.remove('show'); 
     });
+    console.log('ventas');
 
     ventas();
 

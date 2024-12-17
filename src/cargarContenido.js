@@ -291,6 +291,7 @@ menuReportes.addEventListener('click', () => {
         actualizarSelector('mensual');
         opciones.classList.remove('show'); 
     });
+    console.log('ventas');
 
     ventas();
 
