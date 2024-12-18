@@ -181,7 +181,7 @@ menuReportes.addEventListener('click', () => {
     // Crear el elemento canvas
     const titulo = `
         <div class='cabecera'>
-            <h2>Informe de ventass</h2>
+            <h2>Informe de ventas</h2>
             <div class="botonesVentas">
                 <button id="botonPdf">Exportar pdf
                     <i class="fi fi-rs-file-pdf" id="icono-pdf"></i>
@@ -291,7 +291,6 @@ menuReportes.addEventListener('click', () => {
         actualizarSelector('mensual');
         opciones.classList.remove('show'); 
     });
-    console.log('ventas');
 
     ventas();
 
