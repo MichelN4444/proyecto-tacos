@@ -7,6 +7,9 @@
     <!-- Vincular el archivo CSS con los estilos generales -->
     <link rel="stylesheet" href="./css/menu.css">
     <script src="./src/lib/sweetalert2.all.min.js"></script>
+    <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/2.6.0/uicons-bold-rounded/css/uicons-bold-rounded.css'>
+    <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-straight/css/uicons-regular-straight.css'>
+    <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-rounded/css/uicons-regular-rounded.css'>
     
     <!-- Agregar FontAwesome para los íconos -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -32,6 +35,9 @@
             <button onclick="cerrarSesion()">Cerrar sesión</button>
         </div>
     </div>
+
+    <!-- Botón para abrir el menú en pantallas pequeñas -->
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
 
     <!-- Contenedor principal para el contenido dinámico -->
     <div class="main-content" id="contenido">

@@ -4282,6 +4282,19 @@ const agregarProducto = (recargar) =>{
     xhr.send(datos);
 };
 
+function obtenerFecha(periodo, fecha){
+
+    fetch('./src/php/api.php?action=cargarVentas')
+    .then(response => response.json())
+    .then(ventas => {
+        // mejorProducto(ventas)
+        // mejoresDias(ventas)
+        totalGanancias(ventas, fecha);
+        mejorProducto(ventas, fecha);
+        mejoresDias(ventas, periodo, fecha);
+    });
+}
+//Arregglar la parte superior
 function registrarVenta(venta, tickets, form) {
     Swal.fire({
         title: "Estas seguro?",
@@ -4341,7 +4354,7 @@ function registrarVenta(venta, tickets, form) {
     });
 }
 
-/////////////////PARA ANALIZAR LAS VENTAS/////////////////77
+/////////////////PARA ANALIZAR LAS VENTAS/////////////////
 const ventas = () =>{
     //Obteniendo todas las ventas
     fetch('./src/php/api.php?action=cargarVentas')
@@ -4350,27 +4363,67 @@ const ventas = () =>{
         mejorProducto(ventas);
         mejoresDias(ventas);
         totalGanancias(ventas);
-
     });
-
 };
 
-function mejorProducto(ventas){
+function obtenerRangoSemana(year, week) {
+    const primeraSemana = new Date(year, 0, 1 + (week - 1) * 7); // Fecha aproximada al inicio de la semana
+    const diaInicio = primeraSemana.getDate() - primeraSemana.getDay() + 1; // Ajuste para el lunes
+    const inicioSemana = new Date(primeraSemana.setDate(diaInicio));
+    const finSemana = new Date(inicioSemana);
+    finSemana.setDate(inicioSemana.getDate() + 6); // Finaliza el domingo
+
+    // Formatear a YYYY-MM-DD
+    const startDate = inicioSemana.toISOString().split('T')[0];
+    const endDate = finSemana.toISOString().split('T')[0];
+    return [startDate, endDate];
+}
+
+
+function mejorProducto(ventas, fechaFiltro){
     let contador = {};//objeto
     let valorMayor = 0;
     let idMayor;
-    ventas.forEach(venta=>{
-        const idProducto = venta.producto_id;
-        let cantidad = venta.cantidad;
-        cantidad  = parseFloat(cantidad);
 
-        if (contador[idProducto]) {
-            contador[idProducto].cantidad += cantidad;
-        }else {
-            contador[idProducto] = {cantidad: cantidad};
-        }
-        
-    });
+    let ventasFiltradas;
+    if (fechaFiltro) {
+
+        ventasFiltradas = ventas.filter(venta =>{
+            const fechaSinHora = venta.fecha_venta.split(' ')[0];
+            if (fechaFiltro.includes('W')) {
+                const [año, semana] = fechaFiltro.split('-W'); // Extraemos año y número de semana
+                const [fechaInicio, fechaFin] = obtenerRangoSemana(año, semana);
+                return fechaSinHora >= fechaInicio && fechaSinHora <= fechaFin;
+            }else if(fechaFiltro.length === 7){
+                return fechaSinHora.startsWith(fechaFiltro);
+            }else {
+                return fechaSinHora == fechaFiltro;
+            }
+        });
+        ventasFiltradas.forEach(venta => {
+            const idProducto = venta.producto_id;
+            const cantidad = parseFloat(venta.cantidad);
+    
+            if (contador[idProducto]) {
+                contador[idProducto].cantidad += cantidad;
+            } else {
+                contador[idProducto] = {cantidad: cantidad};            }
+        });
+    }else {
+        ventas.forEach(venta=>{
+            const idProducto = venta.producto_id;
+            let cantidad = venta.cantidad;
+            cantidad  = parseFloat(cantidad);
+    
+            if (contador[idProducto]) {
+                contador[idProducto].cantidad += cantidad;
+            }else {
+                contador[idProducto] = {cantidad: cantidad};
+            }
+            
+        });
+    }
+
     // Opcional: Recorre y muestra las cantidades por producto
     for (const id in contador) {
         if (contador[id].cantidad > valorMayor) {
@@ -4380,7 +4433,6 @@ function mejorProducto(ventas){
     }
 
     let idjson = { id_producto: idMayor };
-
     // Realizamos la petición asíncrona
     fetch('./src/php/api.php?action=obtenerProductosId', {
         method: 'POST',
@@ -4397,27 +4449,60 @@ function mejorProducto(ventas){
     });
 }
 
-function mejoresDias(ventas){
+function mejoresDias(ventas, periodo, fechaFiltro){
     let diasDeLaSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
     // Crear un objeto Date a partir de la cadena
     let obtenerTotalVentas = {};
     let ventasPorDia = {};
-    
-    ventas.forEach(venta =>{
-        let fechaVenta = venta.fecha_venta;
-        let ventaId = venta.venta_id;
+    let ventasFiltradas;
 
-        let fecha = new Date(fechaVenta);
-        let diaDeLaSemana = diasDeLaSemana[fecha.getDay()];
+    if (fechaFiltro && fechaFiltro.length < 9) {
+        periodo = periodo.charAt(0).toUpperCase() + periodo.slice(1);
 
-        if(!obtenerTotalVentas[ventaId]){
-            obtenerTotalVentas[ventaId] = diaDeLaSemana;
-            if (!ventasPorDia[diaDeLaSemana]) {
-                ventasPorDia[diaDeLaSemana] = 0;
+        ventasFiltradas = ventas.filter(venta =>{
+            const fechaSinHora = venta.fecha_venta.split(' ')[0];
+            if (fechaFiltro.includes('W')) {
+                const [año, semana] = fechaFiltro.split('-W'); // Extraemos año y número de semana
+                const [fechaInicio, fechaFin] = obtenerRangoSemana(año, semana);
+                return fechaSinHora >= fechaInicio && fechaSinHora <= fechaFin;
+            }else if(fechaFiltro.length === 7){
+                return fechaSinHora.startsWith(fechaFiltro);
             }
-            ventasPorDia[diaDeLaSemana]++;
-        }
-    });
+        });
+        ventasFiltradas.forEach(venta =>{
+            let fechaVenta = venta.fecha_venta;
+            let ventaId = venta.venta_id;
+    
+            let fecha = new Date(fechaVenta);
+            let diaDeLaSemana = diasDeLaSemana[fecha.getDay()];
+    
+            if(!obtenerTotalVentas[ventaId]){
+                obtenerTotalVentas[ventaId] = diaDeLaSemana;
+                if (!ventasPorDia[diaDeLaSemana]) {
+                    ventasPorDia[diaDeLaSemana] = 0;
+                }
+                ventasPorDia[diaDeLaSemana]++;
+            }
+        });
+    }else {
+        ventas.forEach(venta =>{
+            let fechaVenta = venta.fecha_venta;
+            let ventaId = venta.venta_id;
+    
+            let fecha = new Date(fechaVenta);
+            let diaDeLaSemana = diasDeLaSemana[fecha.getDay()];
+    
+            if(!obtenerTotalVentas[ventaId]){
+                obtenerTotalVentas[ventaId] = diaDeLaSemana;
+                if (!ventasPorDia[diaDeLaSemana]) {
+                    ventasPorDia[diaDeLaSemana] = 0;
+                }
+                ventasPorDia[diaDeLaSemana]++;
+            }
+        });
+    }
+
+
     const totalVentas = Object.keys(obtenerTotalVentas).length;//Devuelve las claves en string
 
     //Ordenar 
@@ -4433,47 +4518,89 @@ function mejoresDias(ventas){
         a[1] = De igual forma comparamos la primer variable que seria MARTES pero en la pos 1 QUE ES 3
         AL HACER LA RESTA SI ES NEGATIVO VA A IR DESPUES POR LO QUE EL MAYOR QUEDA AL INICIO 
     */
-    let html = `<h2>Días con más ventas:</h2>`;
+    let html;
+    if (fechaFiltro && fechaFiltro.length < 9) {
+        html = `<h2>Dias con más ventas en ${fechaFiltro}:</h2>`;
+    }else {
+        html = `<h2>Días con más ventas:</h2>`;
+    }
     ventasOrdenadas.forEach((venta, i)=>{
-        let operacion = venta[1] * totalVentas / 100 * 100; 
+        let operacion = (venta[1] / totalVentas) * 100; 
         html+=`    
-            <p>${i+1})<b>${venta[0]}</b> con ${operacion.toFixed(1)}% de las ventas totales</p>
+            <p>${i+1})<b>${venta[0]}</b> con ${Math.round(operacion.toFixed(2))}% de las ventas totales</p>
         `;
     });
     html += `<p>De <b>${totalVentas}</b> ventas totales</p>`;
     document.getElementById('mejoresDias').innerHTML = html;
-    console.log("Total de ventas: ", totalVentas);
     let dias = Object.keys(ventasPorDia);
     let ventasTo = Object.values(ventasPorDia);
-    graficarVentas(dias,ventasTo);
+    console.log(dias);
+    console.log(ventasTo);
+    graficarVentas(dias,ventasTo,periodo);  
 }
 
-function totalGanancias(ventas){
+function totalGanancias(ventas, fechaFiltro){
     let total = 0;
+
     const formatoMoneda = new Intl.NumberFormat('es-MX', {style: 'currency', currency: 'MXN'});
+    if (fechaFiltro) {
+        const ventasFiltradas = ventas.filter(venta => {
+            const fechaSinHora = venta.fecha_venta.split(' ')[0];
+            if (fechaFiltro.includes('W')) {
+                const [año, semana] = fechaFiltro.split('-W'); // Extraemos año y número de semana
+                const [fechaInicio, fechaFin] = obtenerRangoSemana(año, semana);
+                return fechaSinHora >= fechaInicio && fechaSinHora <= fechaFin;
+            }else if (fechaFiltro.length === 7) {
+                return fechaFiltro.startsWith(fechaFiltro);
+            }else {
+                return fechaSinHora === fechaFiltro;
+            }
+        });
+        ventasFiltradas.forEach(venta =>{
+            total+=parseFloat(venta.precio) * parseInt(venta.cantidad);
+        });
+        
+        document.getElementById('totalGanancias').innerHTML=`
+            <br><h2>El total de ganancias en la fecha ${fechaFiltro} es: </h2>
+            <p>${formatoMoneda.format(total)}</p>
+        `;
+    }else {
 
-    ventas.forEach(venta => {
-        total += venta.precio * venta.cantidad;
-    });
-
-    document.getElementById('totalGanancias').innerHTML=`
-        <br><h2>El total de ganancias de las ventas es: </h2>
-        <p>${formatoMoneda.format(total)}</p>
-    `;
+        ventas.forEach(venta => {
+            total += venta.precio * venta.cantidad;
+        }); 
+    
+        document.getElementById('totalGanancias').innerHTML=`
+            <br><h2>El total de ganancias de las ventas globales es: </h2>
+            <p>${formatoMoneda.format(total)}</p>
+        `;
+    }
 }
 
-function graficarVentas(dias, ventasTo){
+let ventasChart;
+function graficarVentas(dias, ventasTo, periodo){
+
+    if (!periodo) {
+        periodo = 'día (global)';
+    }
+    console.log(periodo);
+
     const ctx = document.getElementById('grafica').getContext('2d');
-    new Chart(ctx, {
+     // Verificar si ya existe un gráfico, y destruirlo si es necesario
+    if (ventasChart) {
+        ventasChart.destroy();
+    }
+
+    ventasChart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: dias, //eje X
             datasets: [{
-                label: 'Ventas por día', // Título de la línea
+                label: `Ventas por ${periodo}`, // Título de la línea
                 data: ventasTo, // Datos de ventas en el eje Y
                 borderColor: '#042286',//Color de la linea
                 backgroundColor: '$870469', // Color de los puntos
-                tension: 0.1, 
+                tension: 0, 
                 fill: false // Rellenar debajo de la línea
             }]
         },
@@ -4496,7 +4623,6 @@ function graficarVentas(dias, ventasTo){
             }
         }
     });
-
 }
 
 const menuVentas = document.getElementById('ventas');
@@ -4513,6 +4639,12 @@ if (!cookies.split("; ").some(cookie => cookie.startsWith("login="))) {
     window.location.replace("./index.html");
 }
 
+//////////////////////////////////////////7
+function toggleMenu() {
+    var menu = document.querySelector('.menu');
+    menu.classList.toggle('active');
+}
+window.toggleMenu = toggleMenu;
 
 //////////////////Crreacion dinamica de las mesas/////////////////////
 menuVentas.addEventListener('click',()=>{
@@ -4673,16 +4805,29 @@ menuReportes.addEventListener('click', () => {
     const titulo = `
         <div class='cabecera'>
             <h2>Informe de ventas</h2>
-            <button>Exportar pdf</button>
-            <button class="btn-dropdown" id="boton">Reporte</button>
-            <div class="dropdown-content" id="opciones">
-                <a href="#">Diario</a>
-                <a href="#">Semanal</a>
-                <a href="#">Mensual</a>
+            <div class="botonesVentas">
+                <button id="botonPdf">Exportar pdf
+                    <i class="fi fi-rs-file-pdf" id="icono-pdf"></i>
+                </button>
+                <div class="dropdown">
+                    <button class="btn-dropdown" id="boton">
+                        <i class="fi fi-br-calendar-day" id="icono-calendario"></i>
+                        <span id="boton-text">Diario</span>
+                        <i class="fi fi-rr-angle-small-down" id="icono-flechaAbajo"></i>
+                    </button>
+                    <div class="dropdown-content" id="opciones">
+                        <a href="#" id="diario">Diario</a>
+                        <a href="#" id="semanal">Semanal</a>
+                        <a href="#" id="mensual">Mensual</a>
+                    </div>
+                </div>
+            </div>
+            <div id="periodo-selector">
+                <!-- Formulario dinámico aparecerá aquí -->
             </div>
         </div>
     `;
-    
+
     contenedorNuevo.innerHTML = titulo;
     const canvas = document.createElement('canvas');
     canvas.setAttribute('id', 'grafica');
@@ -4704,11 +4849,71 @@ menuReportes.addEventListener('click', () => {
 
     </table>
     `;
+
     // Agregar el canvas al contenedorNuevo
     contenedorNuevo.innerHTML += plantilla;
 
     // Agregar el contenedor al body o a otro elemento
     contenido.appendChild(contenedorNuevo);
+
+
+    // Variables
+    const boton = document.getElementById('boton');
+    const opciones = document.getElementById('opciones');
+    const periodoSelector = document.getElementById('periodo-selector');
+
+    // Mostrar/ocultar opciones del dropdown
+    boton.addEventListener('click', () => {
+        opciones.classList.toggle('show');
+    });
+
+    // Función para actualizar el selector de periodo
+    let valorSeleccionado;
+    function actualizarSelector(periodo) {
+        let html = '';
+        if (periodo === 'diario') {
+            html = `
+                <label for="dia">Seleccionar día:</label>
+                <input type="date" id="dia">
+            `;
+        } else if (periodo === 'semanal') {
+            html = `
+                <label for="semana">Seleccionar semana:</label>
+                <input type="week" id="semana">
+            `;
+        } else if (periodo === 'mensual') {
+            html = `
+                <label for="mes">Seleccionar mes:</label>
+                <input type="month" id="mes">
+            `;
+        }
+        periodoSelector.innerHTML = html;
+         // Agregar evento de cambio al nuevo campo de entrada
+        const inputFecha = periodoSelector.querySelector('input');
+        inputFecha.addEventListener('change', () => {
+            valorSeleccionado = inputFecha.value; // Obtener el valor seleccionado
+            obtenerFecha(periodo, valorSeleccionado); // Pasar el valor a una función
+        });
+    }
+
+    document.getElementById('diario').addEventListener('click', () => {
+        document.getElementById('boton-text').textContent = 'Diario';
+        
+        actualizarSelector('diario');
+        opciones.classList.remove('show');  // Ocultar el dropdown
+    });
+
+    document.getElementById('semanal').addEventListener('click', () => {
+        document.getElementById('boton-text').textContent = 'Semanal';
+        actualizarSelector('semanal');
+        opciones.classList.remove('show'); 
+    });
+
+    document.getElementById('mensual').addEventListener('click', () => {
+        document.getElementById('boton-text').textContent = 'Mensual';
+        actualizarSelector('mensual');
+        opciones.classList.remove('show'); 
+    });
 
     ventas();
 

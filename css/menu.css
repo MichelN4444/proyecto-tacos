@@ -102,7 +102,7 @@ header img {
         transform: translateX(0);
     }
 }
-
+/*Aqui va menu con su parte responsive*/
 .menu a {
     color: #bbb;
     padding: 15px;
@@ -117,6 +117,46 @@ header img {
 .menu a:hover {
     background-color: #444;
     transform: scale(1.05);
+}
+
+/* Botón de cerrar sesión */
+.boton button {
+    background-color: #f44336;
+    color: white;
+    padding: 10px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+/* Botón de menú en pantallas pequeñas (hamburguesa) */
+.menu-toggle {
+    display: none; /* Ocultamos el botón por defecto */
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    font-size: 30px;
+    background-color: transparent;
+    border: none;
+    color: #bbb;
+    cursor: pointer;
+}
+
+/* Media Query para pantallas pequeñas */
+@media (max-width: 768px) {
+    .menu {
+        width: 250px; /* Aumentamos el ancho para que se vea mejor en dispositivos pequeños */
+        display: none; /* Ocultamos el menú por defecto */
+    }
+
+    .menu.active {
+        display: flex; /* Mostramos el menú cuando está activo */
+    }
+
+    .menu-toggle {
+        display: block; /* Mostramos el botón de menú */
+    }
 }
 
 /* Botón de cerrar sesión */
@@ -140,6 +180,7 @@ header img {
 .boton button:hover {
     background-color: #c03a2b;
 }
+/*Aqui termina menú*/
 
 /* Botón de guardar posiciones */
 .boton-guardar-btn {
@@ -251,8 +292,7 @@ header img {
 button{
     background-color: rgb(33, 85, 255);
     color: #fff;
-    margin-top: .5%;
-    border-radius: 7px;
+    border-radius: 5px;
     border-color: rgb(33, 85, 255);
 }
 
@@ -388,4 +428,100 @@ button{
 
 #editarSeleccionados:active {
     transform: scale(0.98);
+}
+
+
+
+
+
+
+
+
+
+/* Estilos para la cabecera */
+.cabecera {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.botonesVentas{
+    display: flex;
+    justify-content: flex-end;  /* Alinea los botones a la derecha */
+    gap: 10px;  /* Espacio entre los botones */
+}
+
+#botonPdf{
+    display: flex;
+    align-items: center;
+    background-color: #c03a2b;
+    border-color: #c03a2b;
+}
+
+button {
+    padding: 5px 10px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.btn-dropdown {
+    display: flex;
+    align-items: center;
+    background-color: #1d3557;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px;
+    font-size: 16px;
+}
+
+#icono-calendario {
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
+}
+#icono-pdf{
+    margin-left: 8px;
+}
+#icono-flechaAbajo{
+    margin-left: 8px;
+}
+/* Estilo del dropdown */
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    z-index: 1;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+}
+
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    cursor: pointer;
+}
+
+.dropdown-content a:hover {
+    background-color: #ddd;
+}
+
+/* Mostrar el dropdown cuando se activa */
+.show {
+    display: block;
+}
+
+/* Estilo del selector de periodo */
+#periodo-selector {
+    margin-top: 20px;
+}
+
+/* Estilo para los campos de entrada */
+input[type="date"], input[type="week"], input[type="month"] {
+    padding: 10px;
+    margin-top: 5px;
+    width: 200px;
 }
