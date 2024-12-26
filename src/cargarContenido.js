@@ -172,6 +172,37 @@ function recargar (){
     contenido.appendChild(contenedorEditar);
 }
 
+function exportarPdf(){
+    const { jsPDF } = window.jspdf;
+
+        const contenido = document.getElementById('resultados');//Lo que se imprime
+
+        html2canvas(contenido, {
+            scale: 3, // Aumenta la resolución (valor más alto = mejor calidad)
+            useCORS: true, // Permite cargar recursos externos con CORS habilitado
+            backgroundColor: "#ffffff",
+            imageSmoothingEnabled: false,
+        }).then(canvas => {
+            const imgData = canvas.toDataURL('image/png'); // Convertir a imagen PNG
+
+            const pdf = new jsPDF({
+                orientation: 'portrait', // Orientación: portrait o landscape
+                unit: 'mm',
+                format: 'a4', // Formato del documento
+            });
+
+            // Ajustar dimensiones para el PDF
+            const imgWidth = 190; // Ancho en mm
+            const pageHeight = 297; // Altura en mm
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+            pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight, '', 'FAST'); // 'FAST' mejora la calidad
+
+            pdf.save('archivo_mejorado.pdf'); // Descargar el PDF
+        });
+}
+window.exportarPdf = exportarPdf;
+
 menuReportes.addEventListener('click', () => {
     contenido.innerHTML = ''
     const contenedorNuevo = document.createElement('div');
@@ -183,7 +214,7 @@ menuReportes.addEventListener('click', () => {
         <div class='cabecera'>
             <h2>Informe de ventas</h2>
             <div class="botonesVentas">
-                <button id="botonPdf">Exportar pdf
+                <button id="botonPdf" onclick="exportarPdf()">Exportar pdf
                     <i class="fi fi-rs-file-pdf" id="icono-pdf"></i>
                 </button>
                 <div class="dropdown">
@@ -226,6 +257,7 @@ menuReportes.addEventListener('click', () => {
 
     </table>
     `;
+
 
     // Agregar el canvas al contenedorNuevo
     contenedorNuevo.innerHTML += plantilla;
