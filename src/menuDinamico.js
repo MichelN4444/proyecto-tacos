@@ -145,7 +145,7 @@ export const btnEditarProductos = (contenedorEditar, recargar) =>{
                 html += `
                     <br><br><label>Producto: ${nombres[i]}</label>
                     <input type="text" name="nombre_${id}" placeholder="Nuevo nombre">
-                    <input type="number" name="precio_${id}" placeholder="Nuevo precio">
+                    <input type="number" min="0" name="precio_${id}" placeholder="Nuevo precio">
                     <select name="categoria_${id}">
                     <option value="">Selecciona una categoría</option>
                         

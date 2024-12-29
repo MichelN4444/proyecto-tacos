@@ -51,15 +51,15 @@ function respuestaAjax(ajax, dom) {
         setTimeout(function() {
             window.location.replace("./menu.html");
         }, 2000);
-    } else if(response == 'usuario') {
+    } else if(response == 'user') {
         Swal.fire({
             icon: "success",
-            title: "Iniciando sesión",
+            title: "Iniciando sesión como mesero",
         });
         sessionStorage.setItem("isLoggedIn", "true");
 
         setTimeout(() => {
-            window.location.replace("http://localhost:82/proyecto-tacos/menu.html");//se creara otro
+            window.location.replace("./menu.html");//se creara otro
         }, 1000);
     }else{
         Swal.fire({

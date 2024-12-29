@@ -129,7 +129,7 @@ document.getElementById('contenido').addEventListener('click',(e)=>{
                         categorias.forEach(categoria=>{
                             html += `
                             <details>
-                                <summary>${categoria}</summary>`;
+                                <summary><b>${categoria}</b></summary>`;
         
                             const productosCategoria = productos.filter(producto => producto.categoria_nombre == categoria);
                             productosCategoria.forEach(producto => {
