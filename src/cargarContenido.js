@@ -31,10 +31,22 @@ menuVentas.addEventListener('click',()=>{
     contenido.innerHTML = ''
     //////////////////////Tickets por mesa//////////////////////////////////
     const plantilla = ` 
-    <button class="mesa" id='mesa1' ><img src="./img/mesa.png"></button>
-    <button class="mesa" id='mesa2' style="left: 380px; top: 200px;"><img src="./img/mesa.png"></button>
-    <button class="mesa" id='mesa3' style="left: 440px; top: 300px;"><img src="./img/mesa.png"></button>
-    <button class="mesa" id ='mesa4' style="left: 480px; top: 400px;"><img src="./img/mesa.png"></button>
+    <button class="mesa" id="mesa1">
+        <img src="./img/mesa.png">
+        <div class="orden-mesa" id="orden-mesa1">Orden Mesa 1</div>
+    </button>
+    <button class="mesa" id="mesa2" style="left: 380px; top: 200px;">
+        <img src="./img/mesa.png">
+        <div class="orden-mesa" id="orden-mesa2">Orden Mesa 2</div>
+    </button>
+    <button class="mesa" id="mesa3" style="left: 440px; top: 300px;">
+        <img src="./img/mesa.png">
+        <div class="orden-mesa" id="orden-mesa3">Orden Mesa 3</div>
+    </button>
+    <button class="mesa" id="mesa4" style="left: 480px; top: 400px;">
+        <img src="./img/mesa.png">
+        <div class="orden-mesa" id="orden-mesa4">Orden Mesa 4</div>
+    </button>
     `;
     // <div>
     // </div>
