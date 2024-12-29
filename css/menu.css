@@ -245,11 +245,12 @@ header img {
 
 /* Estilo de las mesas */
 .mesa {
+    position: relative;
+    display: inline-block;
     background-color: transparent;
     border: 1px solid #ddd;
     padding: 20px;
     cursor: pointer;
-    display: flex;
     justify-content: center;
     align-items: center;
     border-radius: 8px;
@@ -258,7 +259,26 @@ header img {
     opacity: 0;
     animation: slideInFromBottom 1s ease-out forwards;
 }
-
+.mesa img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+#btn-eliminarMesas{
+    background-color: #c03a2b;
+    border-color: #c03a2b;
+}
+.mesa span {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Centra el texto */
+    color: black; /* Color del texto */
+    font-size: 16px; /* Tamaño de la fuente */
+    font-weight: bold; /* Hace el texto más visible */
+    text-shadow: 1px 1px 2px gray; /* Agrega sombra para mejor contraste */
+    pointer-events: none; /* Permite que el botón siga funcionando al hacer clic */
+}
 .mesa:hover {
     transform: translateY(-10px);
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);

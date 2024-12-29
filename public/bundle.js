@@ -4534,8 +4534,6 @@ function mejoresDias(ventas, periodo, fechaFiltro){
     document.getElementById('mejoresDias').innerHTML = html;
     let dias = Object.keys(ventasPorDia);
     let ventasTo = Object.values(ventasPorDia);
-    console.log(dias);
-    console.log(ventasTo);
     graficarVentas(dias,ventasTo,periodo);  
 }
 
@@ -4546,20 +4544,21 @@ function totalGanancias(ventas, fechaFiltro){
     if (fechaFiltro) {
         const ventasFiltradas = ventas.filter(venta => {
             const fechaSinHora = venta.fecha_venta.split(' ')[0];
-            if (fechaFiltro.includes('W')) {
+            if (fechaFiltro.includes('W')) {//semanal
                 const [año, semana] = fechaFiltro.split('-W'); // Extraemos año y número de semana
                 const [fechaInicio, fechaFin] = obtenerRangoSemana(año, semana);
                 return fechaSinHora >= fechaInicio && fechaSinHora <= fechaFin;
-            }else if (fechaFiltro.length === 7) {
-                return fechaFiltro.startsWith(fechaFiltro);
+            }else if (fechaFiltro.length === 7) {//mes
+                return fechaSinHora.startsWith(fechaFiltro);
             }else {
                 return fechaSinHora === fechaFiltro;
             }
         });
         ventasFiltradas.forEach(venta =>{
+            
             total+=parseFloat(venta.precio) * parseInt(venta.cantidad);
         });
-        
+        console.log(fechaFiltro);
         document.getElementById('totalGanancias').innerHTML=`
             <br><h2>El total de ganancias en la fecha ${fechaFiltro} es: </h2>
             <p>${formatoMoneda.format(total)}</p>
@@ -4583,7 +4582,6 @@ function graficarVentas(dias, ventasTo, periodo){
     if (!periodo) {
         periodo = 'día (global)';
     }
-    console.log(periodo);
 
     const ctx = document.getElementById('grafica').getContext('2d');
      // Verificar si ya existe un gráfico, y destruirlo si es necesario
@@ -4631,6 +4629,12 @@ const menuReportes = document.getElementById('reportes');
 const contenido = document.getElementById('contenido');
 const tickets = {};//Objeto vacio para almacenar tickets
 
+//////////////////////Recuperar mesas
+document.addEventListener('DOMContentLoaded', () => {
+    // Recuperar mesas desde localStorage
+    
+});
+
 /////////////////////////Inicio de sesion//////////////
 // Obtener todas las cookies para que no se salten el login
 const cookies = document.cookie;
@@ -4649,122 +4653,178 @@ window.toggleMenu = toggleMenu;
 //////////////////Crreacion dinamica de las mesas/////////////////////
 menuVentas.addEventListener('click',()=>{
 
-    console.log(tickets);
-
     contenido.innerHTML = '';
+    const mesasGuardadas = JSON.parse(localStorage.getItem('mesas')) || [];
+    const contenedorMesas = document.getElementById('contenedorMesas') || document.createElement('div');
+    contenedorMesas.id = 'contenedorMesas';
+    document.getElementById('contenido').appendChild(contenedorMesas);
+
+    // Renderizar mesas guardadas
+    mesasGuardadas.forEach(mesa => {
+        contenedorMesas.innerHTML += `
+            <button class="mesa" id='${mesa.id}'>
+                <img src="./img/mesa.png">
+                <span>Mesa ${mesa.numero}</span>
+            </button>
+        `;
+    });
     //////////////////////Tickets por mesa//////////////////////////////////
-    const plantilla = ` 
-    <button class="mesa" id='mesa1' ><img src="./img/mesa.png"></button>
-    <button class="mesa" id='mesa2' style="left: 380px; top: 200px;"><img src="./img/mesa.png"></button>
-    <button class="mesa" id='mesa3' style="left: 440px; top: 300px;"><img src="./img/mesa.png"></button>
-    <button class="mesa" id ='mesa4' style="left: 480px; top: 400px;"><img src="./img/mesa.png"></button>
-    `;
+    
     // <div>
     // </div>
     // <button class="guardar-btn" onclick="guardarPosiciones()">Guardar Posiciones</button>
-    const contenedorNuevo = document.createElement('div');
-    contenedorNuevo.innerHTML = plantilla;
-    contenido.appendChild(contenedorNuevo);
+
+    contenido.appendChild(contenedorMesas);
+    const contenedorBoton = document.createElement('div');
+    contenedorBoton.innerHTML = "<button id='btn-agregarMesas'>Agregar mesa</button>";
+    contenedorBoton.innerHTML += "<button id='btn-eliminarMesas'>Eliminar mesa</button>";
+    contenido.appendChild(contenedorBoton);
+    console.log(contenedorMesas);
+
+    document.getElementById('btn-eliminarMesas').addEventListener('click',()=>{
+        const mesas = document.querySelectorAll('.mesa');
+        const mesasGuardadas = JSON.parse(localStorage.getItem('mesas')) || [];
+
+        const ultimaMesa = mesas[mesas.length-1];
+        const idEliminar = ultimaMesa.id;
+
+        const elementoEliminar = document.getElementById(`${idEliminar}`);
+
+        console.log(elementoEliminar);
+        contenedorMesas.removeChild(elementoEliminar);
+
+        const nuevasMesas = mesasGuardadas.filter(mesa => mesa.id !== idEliminar);
+        localStorage.setItem('mesas', JSON.stringify(nuevasMesas));
+    });
+
+    document.getElementById('btn-agregarMesas').addEventListener('click',()=>{
+        const mesas = document.querySelectorAll('.mesa');
+        const mesasGuardadas = JSON.parse(localStorage.getItem('mesas')) || [];
+        let numero = mesas.length > 0 
+        ? parseInt(mesas[mesas.length - 1].id.match(/\d+$/)[0], 10) + 1 
+        : 1;
+
+
+        const nuevaMesa = {
+            id: `mesa${numero}`,
+            numero: numero,
+        };
+        mesasGuardadas.push(nuevaMesa);
     
-    ///Contenido dinamico
-    const mesas = document.querySelectorAll('.mesa');
+        // Guardar en localStorage
+        localStorage.setItem('mesas', JSON.stringify(mesasGuardadas));
     
-    fetch('./src/php/api.php?action=cargarProductos')
-    .then(response => response.json())
-    .then(productos => {
-        mesas.forEach((mesa, i) => {
-            mesa.addEventListener('click', () => {
-                
-                if (!tickets[i]) { // Si el ticket no existe en `tickets`
-                    tickets[i] = {};
-                }
-                
-                let ticket = document.querySelector(`.ticket[data-index="${i}"]`);
-                if (!ticket) { // Si no existe en el DOM
-                    ticket = document.createElement('div');
-                    ticket.classList.add('ticket');
-                    ticket.dataset.index = i;
-                    let html = `<h2>Orden de mesa ${i + 1}</h2>
-                    <form data-index="${i}">`;
-
-                    const categorias = [...new Set(productos.map(producto => producto.categoria_nombre))];
-
-                    categorias.forEach(categoria=>{
-                        html += `
-                        <details>
-                            <summary>${categoria}</summary>`;
-
-                        const productosCategoria = productos.filter(producto => producto.categoria_nombre == categoria);
-                        productosCategoria.forEach(producto => {
-                            if (producto.producto_nombre) {
-                                const nombreProducto = producto.producto_nombre.toLowerCase();
-                                const valor = tickets[i][nombreProducto] || 0;
-                                html += `
-                                <label>${producto.producto_nombre}</label>
-                                <input type="number" class="inputPro" name="${nombreProducto}" value="${valor}" min="0"><br>
-                                <label>Sin..</label>
-                                <input type="text">`;
-                            } else {
-                                console.warn(`Producto sin nombre encontrado: ${JSON.stringify(producto)}`);
-                            }
-                        });
-
-                        html += "</details>";
-                    });
-                    html += `
-                    <input type="button" value="Minimizar" onclick="minimizar(${i})">
-                    <input type="button" value="Cerrar cuenta" onclick="cerrarCuenta(${i})">
-                    </form>`;
-                    ticket.innerHTML = html;     
-
-                    ticket.querySelectorAll('input[type=number]').forEach(input => {
-                        input.addEventListener('input', () => {
-                                tickets[i][input.name] = input.value;
-                        });
-                    });
-                    contenido.appendChild(ticket);
-                    }
-                    if (ticket.classList.contains('hidden')) {
-                        ticket.classList.remove('hidden');
+        // Renderizar nueva mesa
+        contenedorMesas.innerHTML += `
+            <button class="mesa" id='${nuevaMesa.id}'>
+                <img src="./img/mesa.png">
+                <span>Mesa ${nuevaMesa.numero}</span>
+            </button>
+        `;
+    });
+});
+///Contenido dinamico
+document.getElementById('contenido').addEventListener('click',(e)=>{
+    if (e.target.closest('.mesa')) {//delogacion de eventos
+        const mesas = document.querySelectorAll('.mesa');
+        
+        fetch('./src/php/api.php?action=cargarProductos')
+        .then(response => response.json())
+        .then(productos => {
+            mesas.forEach((mesa, i) => {
+                mesa.addEventListener('click', () => {
+                    if (!tickets[i]) { // Si el ticket no existe en `tickets`
+                        tickets[i] = {};
                     }
                     
-                });
-            });
-            function cerrarCuenta(index){
-                const ticket = document.querySelector(`.ticket[data-index="${index}"]`);//Los editados
-                const form = ticket.querySelector('form');
-                let venta;
-                const productosVenta = [];
-                
-                form.querySelectorAll('input[type="number"]').forEach(input => {
-                    const productoNombre = input.name;
-                    const cantidad = parseInt(input.value, 10);
-            
-                    const producto = productos.find(p => p.producto_nombre && p.producto_nombre.toLowerCase() === productoNombre.toLowerCase());
-            
-                    if (producto && cantidad != 0) {
-                        productosVenta.push({
-                            producto_id: producto.id, // Producto id
-                            nombre: productoNombre,
-                            cantidad: cantidad, // Cantidad modificada
-                            precio: producto.precio // Precio del producto
+                    let ticket = document.querySelector(`.ticket[data-index="${i}"]`);
+                    if (!ticket) { // Si no existe en el DOM
+                        ticket = document.createElement('div');
+                        ticket.classList.add('ticket');
+                        ticket.dataset.index = i;
+                        let html = `<h2>Orden de mesa ${i + 1}</h2>
+                        <form data-index="${i}">`;
+        
+                        const categorias = [...new Set(productos.map(producto => producto.categoria_nombre))];
+        
+                        categorias.forEach(categoria=>{
+                            html += `
+                            <details>
+                                <summary>${categoria}</summary>`;
+        
+                            const productosCategoria = productos.filter(producto => producto.categoria_nombre == categoria);
+                            productosCategoria.forEach(producto => {
+                                if (producto.producto_nombre) {
+                                    const nombreProducto = producto.producto_nombre.toLowerCase();
+                                    const valor = tickets[i][nombreProducto] || 0;
+                                    html += `
+                                    <label>${producto.producto_nombre}</label>
+                                    <input type="number" class="inputPro" name="${nombreProducto}" value="${valor}" min="0"><br>
+                                    `;
+                                } else {
+                                    console.warn(`Producto sin nombre encontrado: ${JSON.stringify(producto)}`);
+                                }
+                            });
+        
+                            html += "</details>";
                         });
-                    }
+                        html += `
+                        <input type="button" value="Minimizar" onclick="minimizar(${i})">
+                        <input type="button" value="Cerrar cuenta" onclick="cerrarCuenta(${i})">
+                        </form>`;
+                        ticket.innerHTML = html;     
+        
+                        ticket.querySelectorAll('input[type=number]').forEach(input => {
+                            input.addEventListener('input', () => {
+                                    tickets[i][input.name] = input.value;
+                            });
+                        });
+                        contenido.appendChild(ticket);
+                        }
+                        if (ticket.classList.contains('hidden')) {
+                            ticket.classList.remove('hidden');
+                        }
+                        
+                    });
                 });
-                venta = JSON.stringify(productosVenta);
-                console.log(venta);
-                registrarVenta(venta, tickets[index], form);
-                if (registrarVenta == 'hecho') {
-                    tickets[index] = '';
+                function cerrarCuenta(index){
+                    const ticket = document.querySelector(`.ticket[data-index="${index}"]`);//Los editados
+                    const form = ticket.querySelector('form');
+                    let venta;
+                    const productosVenta = [];
+                    
+                    form.querySelectorAll('input[type="number"]').forEach(input => {
+                        const productoNombre = input.name;
+                        const cantidad = parseInt(input.value, 10);
+                
+                        const producto = productos.find(p => p.producto_nombre && p.producto_nombre.toLowerCase() === productoNombre.toLowerCase());
+                
+                        if (producto && cantidad != 0) {
+                            productosVenta.push({
+                                producto_id: producto.id, // Producto id
+                                nombre: productoNombre,
+                                cantidad: cantidad, // Cantidad modificada
+                                precio: producto.precio // Precio del producto
+                            });
+                        }
+                    });
+                    venta = JSON.stringify(productosVenta);
+                    registrarVenta(venta, tickets[index], form);
+                    if (registrarVenta == 'hecho') {
+                        tickets[index] = '';
+                        minimizar(index);
+                    }
+        
                     minimizar(index);
                 }
-
-                minimizar(index);
-            }
-            window.cerrarCuenta = cerrarCuenta;
-        });
-    });
+                window.cerrarCuenta = cerrarCuenta;
+            });
+    }
+});
     
+
+
+
     function minimizar(index) {
         const ticket = document.querySelector(`.ticket[data-index="${index}"]`);
         if (ticket) {
