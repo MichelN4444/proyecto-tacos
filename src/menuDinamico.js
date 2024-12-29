@@ -21,7 +21,7 @@ export const formulario = `
         <h1 class="titulo-categorias">Agregar categorias</h1>
         <label class="label-categorias">Agregar categorias:</label>
         <input type="text" id="inputCat" class="input-categorias">
-        <button type="button" id="btnAgregarCat" class="btn-categorias">Agregar categorias</button>
+        <button type="button" id="btnAgregarCat" class="btn-categorias">Agregar categoriassss</button>
     </form>
 
     <form id="formAgregarProducto" class="form-productos">
