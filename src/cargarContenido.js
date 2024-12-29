@@ -48,7 +48,6 @@ menuVentas.addEventListener('click',()=>{
         `;
     });
     //////////////////////Tickets por mesa//////////////////////////////////
-<<<<<<< HEAD
     const plantilla = ` 
     <button class="mesa" id="mesa1">
         <img src="./img/mesa.png">
@@ -67,9 +66,6 @@ menuVentas.addEventListener('click',()=>{
         <div class="orden-mesa" id="orden-mesa4">Orden Mesa 4</div>
     </button>
     `;
-=======
-    
->>>>>>> 5165d938f1d3fee0fa32cd79aba15899a87da962
     // <div>
     // </div>
     // <button class="guardar-btn" onclick="guardarPosiciones()">Guardar Posiciones</button>

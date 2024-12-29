@@ -305,10 +305,8 @@ header img {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     animation: slideInFromBottom 0.5s ease-out forwards; /* Animación suave */
 }
-<<<<<<< HEAD
 
 /* Efecto al pasar el ratón */
-=======
 .mesa img {
     display: block;
     width: 100%;
@@ -332,7 +330,6 @@ header img {
     text-shadow: 1px 1px 2px gray; /* Agrega sombra para mejor contraste */
     pointer-events: none; /* Permite que el botón siga funcionando al hacer clic */
 }
->>>>>>> 5165d938f1d3fee0fa32cd79aba15899a87da962
 .mesa:hover {
     transform: translateY(-10px);
     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
@@ -614,7 +611,6 @@ input[type="date"], input[type="week"], input[type="month"] {
     margin-top: 5px;
     width: 200px;
 }
-<<<<<<< HEAD
 /* Contenedor principal de ventas */
 .ventas-container {
     margin: 20px auto;
@@ -855,7 +851,6 @@ input[type="month"]:focus {
         transform: translateY(0);
     }
 }
-=======
 /* Diseño general */
 body {
     font-family: Arial, sans-serif;
@@ -964,4 +959,3 @@ body {
         opacity: 1;
     }
 }
->>>>>>> 5165d938f1d3fee0fa32cd79aba15899a87da962
