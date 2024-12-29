@@ -251,8 +251,6 @@ function mejoresDias(ventas, periodo, fechaFiltro){
     document.getElementById('mejoresDias').innerHTML = html;
     let dias = Object.keys(ventasPorDia);
     let ventasTo = Object.values(ventasPorDia);
-    console.log(dias);
-    console.log(ventasTo);
     graficarVentas(dias,ventasTo,periodo);  
 }
 
@@ -263,20 +261,21 @@ function totalGanancias(ventas, fechaFiltro){
     if (fechaFiltro) {
         const ventasFiltradas = ventas.filter(venta => {
             const fechaSinHora = venta.fecha_venta.split(' ')[0];
-            if (fechaFiltro.includes('W')) {
+            if (fechaFiltro.includes('W')) {//semanal
                 const [año, semana] = fechaFiltro.split('-W') // Extraemos año y número de semana
                 const [fechaInicio, fechaFin] = obtenerRangoSemana(año, semana);
                 return fechaSinHora >= fechaInicio && fechaSinHora <= fechaFin;
-            }else if (fechaFiltro.length === 7) {
-                return fechaFiltro.startsWith(fechaFiltro);
+            }else if (fechaFiltro.length === 7) {//mes
+                return fechaSinHora.startsWith(fechaFiltro);
             }else{
                 return fechaSinHora === fechaFiltro;
             }
         });
         ventasFiltradas.forEach(venta =>{
+            
             total+=parseFloat(venta.precio) * parseInt(venta.cantidad)
         })
-        
+        console.log(fechaFiltro);
         document.getElementById('totalGanancias').innerHTML=`
             <br><h2>El total de ganancias en la fecha ${fechaFiltro} es: </h2>
             <p>${formatoMoneda.format(total)}</p>
@@ -300,7 +299,6 @@ function graficarVentas(dias, ventasTo, periodo){
     if (!periodo) {
         periodo = 'día (global)'
     }
-    console.log(periodo);
 
     const ctx = document.getElementById('grafica').getContext('2d');
      // Verificar si ya existe un gráfico, y destruirlo si es necesario

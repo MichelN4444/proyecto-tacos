@@ -292,11 +292,12 @@ header img {
 
 /* Estilo de las mesas */
 .mesa {
+    position: relative;
+    display: inline-block;
     background-color: transparent;
     border: 1px solid #ddd;
     padding: 20px;
     cursor: pointer;
-    display: flex;
     justify-content: center;
     align-items: center;
     border-radius: 8px;
@@ -304,8 +305,34 @@ header img {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     animation: slideInFromBottom 0.5s ease-out forwards; /* Animación suave */
 }
+<<<<<<< HEAD
 
 /* Efecto al pasar el ratón */
+=======
+.mesa img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+#btn-eliminarMesas{
+    background-color: #c03a2b;
+    border-color: #c03a2b;
+}
+.inputPro{
+    width: 30px;
+}
+.mesa span {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Centra el texto */
+    color: black; /* Color del texto */
+    font-size: 16px; /* Tamaño de la fuente */
+    font-weight: bold; /* Hace el texto más visible */
+    text-shadow: 1px 1px 2px gray; /* Agrega sombra para mejor contraste */
+    pointer-events: none; /* Permite que el botón siga funcionando al hacer clic */
+}
+>>>>>>> 5165d938f1d3fee0fa32cd79aba15899a87da962
 .mesa:hover {
     transform: translateY(-10px);
     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
@@ -587,6 +614,7 @@ input[type="date"], input[type="week"], input[type="month"] {
     margin-top: 5px;
     width: 200px;
 }
+<<<<<<< HEAD
 /* Contenedor principal de ventas */
 .ventas-container {
     margin: 20px auto;
@@ -827,3 +855,113 @@ input[type="month"]:focus {
         transform: translateY(0);
     }
 }
+=======
+/* Diseño general */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+    margin: 0;
+    padding: 0;
+    color: #333;
+}
+
+/* Formularios */
+.form-categorias, .form-productos {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin: 20px auto;
+    max-width: 500px;
+}
+
+/* Títulos */
+.titulo-categorias, .titulo-productos, .titulo-modificar {
+    font-size: 1.8rem;
+    color: #333;
+    text-align: center;
+    margin-bottom: 20px;
+    animation: slide-in-bottom 0.5s ease-out;
+}
+
+/* Etiquetas */
+.label-categorias, .label-productos {
+    font-size: 1rem;
+    color: #555;
+    display: block;
+    margin-bottom: 8px;
+}
+
+/* Entradas */
+.input-categorias, .input-productos, .select-productos {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+/* Botones */
+.btn-categorias, .btn-productos, .btn-editar {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    font-size: 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-categorias:hover, .btn-productos:hover, .btn-editar:hover {
+    background-color: #0056b3;
+}
+
+/* Tabla */
+.table-contenedor {
+    max-width: 800px;
+    margin: 20px auto;
+    overflow-x: auto;
+}
+
+.tabla-productos {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #ffffff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.thead-productos th {
+    background-color: #007bff;
+    color: white;
+    text-align: left;
+    padding: 10px;
+    font-size: 1rem;
+}
+
+.tbody-productos td {
+    border-top: 1px solid #ddd;
+    padding: 10px;
+    font-size: 1rem;
+}
+
+.fila-encabezado {
+    background-color: #007bff;
+    color: white;
+}
+
+/* Animaciones */
+@keyframes slide-in-bottom {
+    from {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+>>>>>>> 5165d938f1d3fee0fa32cd79aba15899a87da962

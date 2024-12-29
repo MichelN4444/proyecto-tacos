@@ -17,6 +17,7 @@
     "rollup": "^4.27.3"
   },
   "dependencies": {
+    "jspdf": "^2.5.2",
     "sweetalert2": "^11.6.13"
   }
 }

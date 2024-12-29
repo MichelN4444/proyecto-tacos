@@ -17,7 +17,11 @@ if ($result->num_rows > 0) {
     $user = $result->fetch_assoc();
     // Verificar contraseña encriptada
     if ($password === $user['password_u']) {
-        echo "admin";
+        if ($user['role'] == 'admin') {
+            echo "admin";
+        }else if ($user['role'] == 'user') {
+            echo "user";
+        }
         setcookie("login", "true", time() + 3600, "/"); // Cookie de sesión válida por 1 hora
     } else {
         echo "Usuario o contraseña incorrectos";

@@ -17,42 +17,41 @@ export const llenarCategorias = () => {
 }
 
 export const formulario = ` 
-    <form>
-        <h1>Agregar categorias</h1>
-        <label>Agregar categorias:</label>
-        <input type="text" id="inputCat">
-        <button type="button" id="btnAgregarCat">Agregar categorias</button>
+        <form class="form-categorias">
+        <h1 class="titulo-categorias">Agregar categorias</h1>
+        <label class="label-categorias">Agregar categorias:</label>
+        <input type="text" id="inputCat" class="input-categorias">
+        <button type="button" id="btnAgregarCat" class="btn-categorias">Agregar categorias</button>
     </form>
-    <form id='formAgregarProducto'>
-        <h1>Agregar productos</h1> 
-        <label>Categoria:</label>
-        <select name='categoria' id="categoriaProducto">
 
+    <form id="formAgregarProducto" class="form-productos">
+        <h1 class="titulo-productos">Agregar productos</h1>
+        <label class="label-productos">Categoria:</label>
+        <select name="categoria" id="categoriaProducto" class="select-productos">
         </select><br>
-        <label>Introduce el nombre:</label>
-        <input type='text' id="nombreProducto" name="nombre" placeholder='Nombre del producto' required><br>
-        <label for="precioProducto">Precio:</label>
-        <input type="number" id="precioProducto" name="precio" placeholder="Precio del producto" min="0" required><br>
-        <button type="button" id="btnAgregarProducto">Agregar producto</button>
+        <label class="label-productos">Introduce el nombre:</label>
+        <input type="text" id="nombreProducto" name="nombre" placeholder="Nombre del producto" required class="input-productos"><br>
+        <label for="precioProducto" class="label-productos">Precio:</label>
+        <input type="number" id="precioProducto" name="precio" placeholder="Precio del producto" min="0" required class="input-productos"><br>
+        <button type="button" id="btnAgregarProducto" class="btn-productos">Agregar producto</button>
     </form>
 
-    <br><h1>Modificar productos</h1>
+    <br><h1 class="titulo-modificar">Modificar productos</h1>
     <div class="table-contenedor">
-        <table id="productosTabla" border='1'>
-            <thead>
-                <tr>
-                    <th>Nombre del producto</th>
-                    <th>Categoria</th>
-                    <th>Precio</th>
-                    <th>Modificar</th>
-                    <!--<th>Visible en el menú</th>-->
+        <table id="productosTabla" border="1" class="tabla-productos">
+            <thead class="thead-productos">
+                <tr class="fila-encabezado">
+                    <th class="columna-nombre">Nombre del producto</th>
+                    <th class="columna-categoria">Categoria</th>
+                    <th class="columna-precio">Precio</th>
+                    <th class="columna-modificar">Modificar</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody class="tbody-productos">
             </tbody>
         </table>
     </div>
-    <button id="editarSeleccionados">Editar seleccionados</button>
+    <button id="editarSeleccionados" class="btn-editar">Editar seleccionados</button>
 `;
 
 export const agregarCategorias = (recargar) => {
@@ -145,7 +144,7 @@ export const btnEditarProductos = (contenedorEditar, recargar) =>{
                 html += `
                     <br><br><label>Producto: ${nombres[i]}</label>
                     <input type="text" name="nombre_${id}" placeholder="Nuevo nombre">
-                    <input type="number" name="precio_${id}" placeholder="Nuevo precio">
+                    <input type="number" min="0" name="precio_${id}" placeholder="Nuevo precio">
                     <select name="categoria_${id}">
                     <option value="">Selecciona una categoría</option>
                         
