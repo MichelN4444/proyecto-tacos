@@ -18,14 +18,14 @@ export const llenarCategorias = () => {
 
 export const formulario = ` 
         <form class="form-categorias">
-        <h1 class="titulo-categorias">Agregar categorias</h1>
+        <h1 class="titulo-categorias">Agregar categoriiiias</h1>
         <label class="label-categorias">Agregar categorias:</label>
         <input type="text" id="inputCat" class="input-categorias">
         <button type="button" id="btnAgregarCat" class="btn-categorias">Agregar categoriassss</button>
     </form>
 
     <form id="formAgregarProducto" class="form-productos">
-        <h1 class="titulo-productos">Agregar productos</h1>
+        <h1 class="titulo-productos">Agregarrrrr productos</h1>
         <label class="label-productos">Categoria:</label>
         <select name="categoria" id="categoriaProducto" class="select-productos">
         </select><br>
