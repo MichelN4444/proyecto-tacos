@@ -4777,7 +4777,16 @@ const menuVentas = document.getElementById('ventas');
 const menuInventarios = document.getElementById('inventario');
 const menuReportes = document.getElementById('reportes');
 const contenido = document.getElementById('contenido');
-const tickets = {};//Objeto vacio para almacenar tickets
+let tickets = JSON.parse(localStorage.getItem('tickets')) || {};//Objeto vacio para almacenar tickets
+
+document.addEventListener('DOMContentLoaded', () => {
+    const tickets = JSON.parse(localStorage.getItem('tickets')) || {};
+    for (const index in tickets) {
+        const event = new Event('click');
+        document.querySelector(`.mesa[data-index="${index}"]`)?.dispatchEvent(event);
+    }
+});
+
 
 
 // Verificar el rol del usuario al cargar la página
@@ -4791,8 +4800,6 @@ function actualizaVisualizador() {
         });
     }
 }
-
-
 
 /////////////////////////Inicio de sesion//////////////
 // Obtener todas las cookies para que no se salten el login
@@ -4827,9 +4834,6 @@ menuVentas.addEventListener('click',()=>{
             </button>
         `;
     });
-    // <div>
-    // </div>
-    // <button class="guardar-btn" onclick="guardarPosiciones()">Guardar Posiciones</button>
 
     contenido.appendChild(contenedorMesas);
     const contenedorBoton = document.createElement('div');
@@ -4885,6 +4889,7 @@ document.getElementById('contenido').addEventListener('click',(e)=>{
         fetch('./src/php/api.php?action=cargarProductos')
         .then(response => response.json())
         .then(productos => {
+            
             mesas.forEach((mesa, i) => {
                 mesa.addEventListener('click', () => {
                     if (!tickets[i]) { // Si el ticket no existe en `tickets`
@@ -4931,6 +4936,7 @@ document.getElementById('contenido').addEventListener('click',(e)=>{
                         ticket.querySelectorAll('input[type=number]').forEach(input => {
                             input.addEventListener('input', () => {
                                     tickets[i][input.name] = input.value;
+                                    localStorage.setItem('tickets', JSON.stringify(tickets)); // Guardar en localStorage
                             });
                         });
                         contenido.appendChild(ticket);
@@ -4966,6 +4972,7 @@ document.getElementById('contenido').addEventListener('click',(e)=>{
                     registrarVenta(venta, tickets[index], form);
                     if (registrarVenta == 'hecho') {
                         tickets[index] = '';
+                        localStorage.setItem('tickets', JSON.stringify(tickets));
                         minimizar(index);
                     }
         

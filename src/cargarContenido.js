@@ -7,7 +7,16 @@ const menuVentas = document.getElementById('ventas');
 const menuInventarios = document.getElementById('inventario');
 const menuReportes = document.getElementById('reportes');
 const contenido = document.getElementById('contenido');
-const tickets = {};//Objeto vacio para almacenar tickets
+let tickets = JSON.parse(localStorage.getItem('tickets')) || {};//Objeto vacio para almacenar tickets
+
+document.addEventListener('DOMContentLoaded', () => {
+    const tickets = JSON.parse(localStorage.getItem('tickets')) || {};
+    for (const index in tickets) {
+        const event = new Event('click');
+        document.querySelector(`.mesa[data-index="${index}"]`)?.dispatchEvent(event);
+    }
+});
+
 
 
 // Verificar el rol del usuario al cargar la página
@@ -21,8 +30,6 @@ function actualizaVisualizador() {
         });
     }
 }
-
-
 
 /////////////////////////Inicio de sesion//////////////
 // Obtener todas las cookies para que no se salten el login
@@ -57,28 +64,6 @@ menuVentas.addEventListener('click',()=>{
             </button>
         `;
     });
-    //////////////////////Tickets por mesa//////////////////////////////////
-    const plantilla = ` 
-    <button class="mesa" id="mesa1">
-        <img src="./img/mesa.png">
-        <div class="orden-mesa" id="orden-mesa1">Orden Mesa 1</div>
-    </button>
-    <button class="mesa" id="mesa2" style="left: 380px; top: 200px;">
-        <img src="./img/mesa.png">
-        <div class="orden-mesa" id="orden-mesa2">Orden Mesa 2</div>
-    </button>
-    <button class="mesa" id="mesa3" style="left: 440px; top: 300px;">
-        <img src="./img/mesa.png">
-        <div class="orden-mesa" id="orden-mesa3">Orden Mesa 3</div>
-    </button>
-    <button class="mesa" id="mesa4" style="left: 480px; top: 400px;">
-        <img src="./img/mesa.png">
-        <div class="orden-mesa" id="orden-mesa4">Orden Mesa 4</div>
-    </button>
-    `;
-    // <div>
-    // </div>
-    // <button class="guardar-btn" onclick="guardarPosiciones()">Guardar Posiciones</button>
 
     contenido.appendChild(contenedorMesas);
     const contenedorBoton = document.createElement('div');
@@ -134,6 +119,7 @@ document.getElementById('contenido').addEventListener('click',(e)=>{
         fetch('./src/php/api.php?action=cargarProductos')
         .then(response => response.json())
         .then(productos => {
+            
             mesas.forEach((mesa, i) => {
                 mesa.addEventListener('click', () => {
                     if (!tickets[i]) { // Si el ticket no existe en `tickets`
@@ -180,6 +166,7 @@ document.getElementById('contenido').addEventListener('click',(e)=>{
                         ticket.querySelectorAll('input[type=number]').forEach(input => {
                             input.addEventListener('input', () => {
                                     tickets[i][input.name] = input.value;
+                                    localStorage.setItem('tickets', JSON.stringify(tickets)); // Guardar en localStorage
                             });
                         });
                         contenido.appendChild(ticket);
@@ -215,6 +202,7 @@ document.getElementById('contenido').addEventListener('click',(e)=>{
                     const registroVenta = registrarVenta(venta, tickets[index], form);
                     if (registrarVenta == 'hecho') {
                         tickets[index] = '';
+                        localStorage.setItem('tickets', JSON.stringify(tickets));
                         minimizar(index);
                     }
         
