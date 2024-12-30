@@ -269,7 +269,10 @@ header img {
     display: none; /* Inicialmente oculto */
     transition: font-size 0.3s ease;
 }
-
+.btnEliminar{
+    background-color: tomato;
+    border-color: tomato;
+}
 /* Estilo cuando la mesa es clickeada */
 .mesa.clicked {
     width: 400px;  /* Tamaño más grande cuando se hace clic */
@@ -317,7 +320,7 @@ header img {
     border-color: #c03a2b;
 }
 .inputPro{
-    width: 30px;
+    width: 40px;
 }
 .mesa span {
     position: absolute;
@@ -485,7 +488,18 @@ button{
     border: 1px solid #ddd;
     font-size: 14px;
 }
-
+#tablaVentas th{
+    background-color: #343a40;
+    color: white;
+    font-weight: bold;
+}
+#tablaVentas tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+#tablaVentas tr:hover{
+    background-color: #beb6b6;
+    transition: background-color 0.3s;
+}
 #productosTabla th {
     background-color: #343a40;
     color: white;
@@ -816,9 +830,7 @@ input[type="month"]:focus {
     font-weight: bold;
     color: #343a40;
     text-align: center;
-    margin: 20px 0;
     position: relative;
-    opacity: 0; /* Inicia invisible */
     animation: fadeInSlide 1s ease-out forwards;
 }
 
@@ -912,6 +924,12 @@ body {
 .btn-categorias:hover, .btn-productos:hover, .btn-editar:hover {
     background-color: #0056b3;
 }
+
+.inactivo {
+    background-color: #f8d7da !important; 
+    color: #721c24; /* Texto rojo oscuro */
+}
+
 
 /* Tabla */
 .table-contenedor {

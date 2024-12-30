@@ -46,7 +46,7 @@ function respuestaAjax(ajax, dom) {
             icon: "success",
             title: "Iniciando sesión como adminstrador",
         });
-        sessionStorage.setItem("isLoggedIn", "true");
+        sessionStorage.setItem("userRole", "admin");
 
         setTimeout(function() {
             window.location.replace("./menu.html");
@@ -56,7 +56,7 @@ function respuestaAjax(ajax, dom) {
             icon: "success",
             title: "Iniciando sesión como mesero",
         });
-        sessionStorage.setItem("isLoggedIn", "true");
+        sessionStorage.setItem("userRole", "user");
 
         setTimeout(() => {
             window.location.replace("./menu.html");//se creara otro

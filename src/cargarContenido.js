@@ -2,17 +2,27 @@ import {formulario, llenarCategorias, agregarProducto, tabla, btnEditarProductos
 import {obtenerFecha, registrarVenta, ventas } from './venta';
 import { agregarCategorias } from './menuDinamico';
 
+
 const menuVentas = document.getElementById('ventas');
 const menuInventarios = document.getElementById('inventario');
 const menuReportes = document.getElementById('reportes');
 const contenido = document.getElementById('contenido');
 const tickets = {};//Objeto vacio para almacenar tickets
 
-//////////////////////Recuperar mesas
-document.addEventListener('DOMContentLoaded', () => {
-    // Recuperar mesas desde localStorage
-    
-});
+
+// Verificar el rol del usuario al cargar la página
+function actualizaVisualizador() {
+    const userRole = sessionStorage.getItem("userRole");
+
+    // Si el rol es 'user' (mesero), ocultamos las secciones de administrador
+    if (userRole === "user") {
+        document.querySelectorAll('.admin-only').forEach((element) => {
+            element.setAttribute('style', 'display: none !important;');  // Agregar el estilo en línea
+        });
+    }
+}
+
+
 
 /////////////////////////Inicio de sesion//////////////
 // Obtener todas las cookies para que no se salten el login
@@ -75,8 +85,6 @@ menuVentas.addEventListener('click',()=>{
     contenedorBoton.innerHTML = "<button id='btn-agregarMesas'>Agregar mesa</button>";
     contenedorBoton.innerHTML += "<button id='btn-eliminarMesas'>Eliminar mesa</button>"
     contenido.appendChild(contenedorBoton);
-    console.log(contenedorMesas);
-
     document.getElementById('btn-eliminarMesas').addEventListener('click',()=>{
         const mesas = document.querySelectorAll('.mesa');
         const mesasGuardadas = JSON.parse(localStorage.getItem('mesas')) || [];
@@ -86,7 +94,6 @@ menuVentas.addEventListener('click',()=>{
 
         const elementoEliminar = document.getElementById(`${idEliminar}`)
 
-        console.log(elementoEliminar);
         contenedorMesas.removeChild(elementoEliminar);
 
         const nuevasMesas = mesasGuardadas.filter(mesa => mesa.id !== idEliminar);
@@ -218,9 +225,6 @@ document.getElementById('contenido').addEventListener('click',(e)=>{
     }
 })
     
-
-
-
     function minimizar(index) {
         const ticket = document.querySelector(`.ticket[data-index="${index}"]`);
         if (ticket) {
@@ -232,60 +236,88 @@ document.getElementById('contenido').addEventListener('click',(e)=>{
 ///////////////////Inventarios////////////////////
 menuInventarios.addEventListener('click',()=>{
     recargar();
+    actualizaVisualizador();
 })
 
-function recargar (){
-    contenido.innerHTML = ''
-    const contenedorNuevo = document.createElement('div');
-    // contenedorNuevo.id = 'contenedorInventarios';
-    contenedorNuevo.innerHTML = formulario;
-    contenido.appendChild(contenedorNuevo);
-    llenarCategorias();
-    tabla();
-    const btnAgregar = document.getElementById('btnAgregarProducto');
-    btnAgregar.addEventListener('click', ()=>agregarProducto(recargar))
-    const contenedorEditar= document.createElement('div');
-    btnEditarProductos(contenedorEditar, recargar);
-    agregarCategorias(recargar);
-    
-    contenido.appendChild(contenedorEditar);
-}
-
-function exportarPdf(){
+function exportarPdf() {
     const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF();
 
-        const contenido = document.getElementById('resultados');//Lo que se imprime
+    const contenido = document.getElementById('resultados'); // Obtenemos el contenido a imprimir
 
-        html2canvas(contenido, {
-            scale: 3, // Aumenta la resolución (valor más alto = mejor calidad)
-            useCORS: true, // Permite cargar recursos externos con CORS habilitado
-            backgroundColor: "#ffffff",
-            imageSmoothingEnabled: false,
-        }).then(canvas => {
-            const imgData = canvas.toDataURL('image/png'); // Convertir a imagen PNG
+    html2canvas(contenido, {
+        scale: 3,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+        imageSmoothingEnabled: false,
+    }).then(canvas => {
+        const imgData = canvas.toDataURL('image/png'); // Convertir a imagen PNG
 
-            const pdf = new jsPDF({
-                orientation: 'portrait', // Orientación: portrait o landscape
-                unit: 'mm',
-                format: 'a4', // Formato del documento
+        // Agregar la imagen generada por html2canvas al PDF
+        const imgWidth = 190; // Ancho en mm
+        const pageHeight = 297; // Altura en mm
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        let heightLeft = imgHeight;
+        let position = 10;
+
+        if (heightLeft > pageHeight) {
+            while (heightLeft > 0) {
+                pdf.addImage(imgData, 'PNG', 10, position, imgWidth, pageHeight);
+                heightLeft -= pageHeight;
+                position += pageHeight; // Mover hacia abajo para la siguiente página
+                if (heightLeft > 0) {
+                    pdf.addPage(); // Agregar nueva página
+                }
+            }
+        } else {
+            pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+        }
+
+        // Aquí empezamos a dibujar la tabla manualmente
+        const tabla = document.getElementById('tablaVentas'); // Obtener la tabla HTML
+
+        // Definir las posiciones de la tabla
+        let startX = 10;
+        let startY = position + imgHeight + 10; // Ajustar la posición para que no quede encima de la imagen
+        const rowHeight = 10; // Altura de cada fila
+        const colWidths = [50, 50, 50]; // Anchos de las columnas
+        const margin = 5; // Márgenes dentro de las celdas
+
+        const pageHeightForTable = pageHeight - startY - 10; // Espacio disponible para la tabla en la página actual
+        let currentY = startY;
+
+        // Dibujar las filas de la tabla
+        Array.from(tabla.rows).forEach((row, rowIndex) => {
+            // Verificar si la fila se ajusta a la página actual
+            if (currentY + rowHeight > pageHeight) {
+                pdf.addPage(); // Si no cabe, agregamos una nueva página
+                currentY = 10; // Reiniciar la posición en la nueva página
+            }
+
+            // Dibujar celdas de la fila
+            Array.from(row.cells).forEach((cell, colIndex) => {
+                // Dibujar el rectángulo para cada celda
+                pdf.rect(startX + colWidths[colIndex] * colIndex, currentY, colWidths[colIndex], rowHeight);
+
+                // Escribir el texto en la celda
+                pdf.text(cell.textContent, startX + colWidths[colIndex] * colIndex + margin, currentY + 7); // +7 para centrar el texto verticalmente
             });
 
-            // Ajustar dimensiones para el PDF
-            const imgWidth = 190; // Ancho en mm
-            const pageHeight = 297; // Altura en mm
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-            pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight, '', 'FAST'); // 'FAST' mejora la calidad
-
-            pdf.save('archivo_mejorado.pdf'); // Descargar el PDF
+            currentY += rowHeight; // Mover hacia abajo para la siguiente fila
         });
+
+        // Descargar el PDF con el nombre "Resumen_Ventas.pdf"
+        pdf.save('Resumen_Ventas.pdf');
+    });
 }
+
 window.exportarPdf = exportarPdf;
 
 menuReportes.addEventListener('click', () => {
     contenido.innerHTML = ''
     const contenedorNuevo = document.createElement('div');
     contenedorNuevo.setAttribute('id', 'resultados');
+    contenedorNuevo.classList.add('admin-only')
 
     
     // Crear el elemento canvas
@@ -327,14 +359,19 @@ menuReportes.addEventListener('click', () => {
     <p id="productoMasVendido"></p>
     <p id="mejoresDias"></p>
     <p id="totalGanancias"></p><br>
-    <table>
-        <tr>
-            <th>Producto</th>
-            <th>Ventas</th>
-            <th>Ganancia</th>
-        <tr>
-
-    </table>
+    <div class="table-contenedor">
+        <table id="tablaVentas" border="1" class="tabla-productos">
+            <thead class="thead-productos">
+                <tr class="fila-encabezado">
+                    <th class="columna-nombre">Nombre del producto</th>
+                    <th class="columna-modificar">Ventas</th>
+                    <th class="columna-modificar">Ganancias</th>
+                </tr>
+            </thead>
+            <tbody class="tbody-productos">
+            </tbody>
+        </table>
+    </div>
     `;
 
 
@@ -404,7 +441,7 @@ menuReportes.addEventListener('click', () => {
     });
 
     ventas();
-
+    actualizaVisualizador();
 });
 
 

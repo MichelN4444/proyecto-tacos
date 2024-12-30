@@ -3,10 +3,10 @@ export function obtenerFecha(periodo, fecha){
     fetch('./src/php/api.php?action=cargarVentas')
     .then(response => response.json())
     .then(ventas => {
-        // mejorProducto(ventas)
-        // mejoresDias(ventas)
+
         totalGanancias(ventas, fecha)
         mejorProducto(ventas, fecha)
+        resumenProductos(ventas, fecha)
         mejoresDias(ventas, periodo, fecha)
     })
 }
@@ -165,6 +165,91 @@ function mejorProducto(ventas, fechaFiltro){
         <h2>Producto estrella:</h2> <p>${data.producto} con ${valorMayor} ventas</p><br>`;
     })
 }
+
+function resumenProductos(ventas, fechaFiltro) {
+    let contador = {}; // Objeto para contar la cantidad de ventas por producto
+    let ganancias = {}; // Objeto para sumar las ganancias por producto
+
+    let ventasFiltradas;
+    if (fechaFiltro) {
+        ventasFiltradas = ventas.filter(venta => {
+            const fechaSinHora = venta.fecha_venta.split(' ')[0];
+            if (fechaFiltro.includes('W')) {
+                const [año, semana] = fechaFiltro.split('-W'); // Extraemos año y número de semana
+                const [fechaInicio, fechaFin] = obtenerRangoSemana(año, semana);
+                return fechaSinHora >= fechaInicio && fechaSinHora <= fechaFin;
+            } else if (fechaFiltro.length === 7) {
+                return fechaSinHora.startsWith(fechaFiltro);
+            } else {
+                return fechaSinHora === fechaFiltro;
+            }
+        });
+
+        ventasFiltradas.forEach(venta => {
+            const idProducto = venta.producto_id;
+            const cantidad = parseFloat(venta.cantidad);
+            const precio = parseFloat(venta.precio); // Se asume que 'precio' es el valor de venta por unidad
+
+            // Actualiza las cantidades y las ganancias
+            if (contador[idProducto]) {
+                contador[idProducto].cantidad += cantidad;
+                ganancias[idProducto] += cantidad * precio;
+            } else {
+                contador[idProducto] = { cantidad: cantidad };
+                ganancias[idProducto] = cantidad * precio;
+            }
+        });
+    } else {
+        ventas.forEach(venta => {
+            const idProducto = venta.producto_id;
+            let cantidad = parseFloat(venta.cantidad);
+            let precio = parseFloat(venta.precio);
+
+            if (contador[idProducto]) {
+                contador[idProducto].cantidad += cantidad;
+                ganancias[idProducto] += cantidad * precio;
+            } else {
+                contador[idProducto] = { cantidad: cantidad };
+                ganancias[idProducto] = cantidad * precio;
+            }
+        });
+    }
+
+    // Muestra la información en la tabla
+    const tbody = document.querySelector('.tbody-productos');
+    tbody.innerHTML = ''; // Limpiar contenido previo
+
+    for (const id in contador) {
+        const producto = contador[id];
+        const totalGanancias = ganancias[id];
+        const formatoMoneda = new Intl.NumberFormat('es-MX', {style: 'currency', currency: 'MXN'});
+        
+        // Realiza la petición asíncrona para obtener el nombre del producto
+        fetch('./src/php/api.php?action=obtenerProductosId', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ id_producto: id }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            const nombreProducto = data.producto;
+            const categoriaProducto = data.categoria; // Se asume que 'categoria' es un campo en la respuesta
+            
+            // Añadir fila a la tabla
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${nombreProducto}</td>
+                <td>${producto.cantidad}</td>
+                <td>${formatoMoneda.format(totalGanancias.toFixed(2))}</td>
+            `;
+            tbody.appendChild(row);
+        })
+        .catch(error => console.error('Error al obtener producto:', error));
+    }
+}
+
 
 function mejoresDias(ventas, periodo, fechaFiltro){
     let diasDeLaSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];

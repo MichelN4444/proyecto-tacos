@@ -18,14 +18,14 @@ export const llenarCategorias = () => {
 
 export const formulario = ` 
         <form class="form-categorias">
-        <h1 class="titulo-categorias">Agregar categoriiiias</h1>
+        <h1 class="titulo-categorias">Agregar categorias</h1>
         <label class="label-categorias">Agregar categorias:</label>
         <input type="text" id="inputCat" class="input-categorias">
-        <button type="button" id="btnAgregarCat" class="btn-categorias">Agregar categoriassss</button>
+        <button type="button" id="btnAgregarCat" class="btn-categorias">Agregar categorias</button>
     </form>
 
     <form id="formAgregarProducto" class="form-productos">
-        <h1 class="titulo-productos">Agregarrrrr productos</h1>
+        <h1 class="titulo-productos">Agregar productos</h1>
         <label class="label-productos">Categoria:</label>
         <select name="categoria" id="categoriaProducto" class="select-productos">
         </select><br>
@@ -115,11 +115,17 @@ export const tabla = () => {
         llenarTabla.innerHTML = ''; 
         data.forEach(producto => {
             const fila = document.createElement('tr');
+
+            // Si el producto está inactivo, agregamos una clase
+            if (producto.activo == 0) {
+                fila.classList.add('inactivo');
+            }
+
             fila.innerHTML = `
                 <td>${producto.nombre}</td>
                 <td>${producto.categoria}</td>
                 <td>$${producto.precio}</td>
-                <td><input class="seleccionar" type="checkbox" value="${producto.id}" data-info='${producto.nombre}'></td>
+                <td><input class="seleccionar" type="checkbox" value="${producto.id}" data-info='${producto.nombre}' data-activo='${fila.classList}'></td>
             `;
             llenarTabla.appendChild(fila);
         });
@@ -131,6 +137,7 @@ export const tabla = () => {
 export const btnEditarProductos = (contenedorEditar, recargar) =>{
     document.getElementById('editarSeleccionados').addEventListener('click' ,()=>{
         const seleccionados = document.querySelectorAll('.seleccionar:checked');
+        const activo = Array.from(seleccionados).map(checkbox => checkbox.dataset.activo)
         const ids = Array.from(seleccionados).map(checkbox => checkbox.value);
         const nombres = Array.from(seleccionados).map(checkbox => checkbox.dataset.info)
 
@@ -149,9 +156,13 @@ export const btnEditarProductos = (contenedorEditar, recargar) =>{
                     <option value="">Selecciona una categoría</option>
                         
                     </select>
-                    <button type="button" class='btnEliminar' data-id="${id}">Eliminar producto</button>
-                `;
-        });
+                    <button type="button" class='btnEliminar' data-id="${id}">Ocultar producto</button>
+                    `;
+                    if (activo[i] == 'inactivo') {                
+                        html +=`<button type="button" class="btnDesocultar" data-id="${id}">Desocultar</button>`
+                    }
+                });
+
     html += `<br><br><button type="button" id="guardar">Guardar cambios</button></form>`;
     contenedorEditar.innerHTML = html;
     
@@ -166,10 +177,11 @@ export const btnEditarProductos = (contenedorEditar, recargar) =>{
                 });
             });
 
-    document.querySelectorAll('.btnEliminar').forEach(btn =>{
+
+    document.querySelectorAll('.btnDesocultar').forEach(btn =>{
         btn.addEventListener('click', (e)=>{
             const id = e.target.getAttribute('data-id'); // Obtener el ID del producto
-    
+            console.log(id);
             // Confirmar antes de eliminar
             Swal.fire({
                 title: "¿Estás seguro?",
@@ -179,18 +191,72 @@ export const btnEditarProductos = (contenedorEditar, recargar) =>{
                 confirmButtonColor: "#3085d6",
                 cancelButtonColor: "#d33",
                 cancelButtonText: 'Cancelar',
-                confirmButtonText: "Sí, eliminarlo!"
+                confirmButtonText: "Sí, desocultar!"
             }).then((result) => {
                 if (result.isConfirmed) {
-                    fetch(`http://localhost:82/proyecto-tacos/src/php/api.php?action=eliminarProducto&id=${id}`, {
+                    fetch(`./src/php/api.php?action=desocultarProducto&id=${id}`, {
                         method: 'POST'
                     })
                     .then(response => response.json())
                     .then(result => {
                     if (result.success) {
                         Swal.fire({
-                            title: "Eliminado!",
-                            text: "El producto fue eliminado.",
+                            title: "Desocultado!",
+                            text: "Ya puedes ver el producto en el menú.",
+                            icon: "success"
+                        });
+                        recargar(); // Recargar la tabla para reflejar los cambios
+                    } else {
+                        Swal.fire({
+                            title: "Ha ocurrido un error",
+                            showClass: {
+                            popup: `
+                                animate__animated
+                                animate__fadeInUp
+                                animate__faster
+                            `
+                            },
+                            hideClass: {
+                            popup: `
+                                animate__animated
+                                animate__fadeOutDown
+                                animate__faster
+                            `
+                            }
+                        });
+                    }
+                })
+                }
+            });
+        })
+    })
+
+    document.querySelectorAll('.btnEliminar').forEach(btn =>{
+        btn.addEventListener('click', (e)=>{
+            const id = e.target.getAttribute('data-id'); // Obtener el ID del producto
+            console.log(id);
+            // Confirmar antes de eliminar
+            Swal.fire({
+                title: "¿Estás seguro?",
+                text: "No podras revertirlo!",
+                icon: "Atencion",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                cancelButtonText: 'Cancelar',
+                confirmButtonText: "Sí, ocultarlo!"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`./src/php/api.php?action=eliminarProducto&id=${id}`, {
+                        method: 'POST'
+                    })
+                    .then(response => response.json())
+                    .then(result => {
+
+                    if (result.success) {
+                        Swal.fire({
+                            title: "Ocultado!",
+                            text: "El producto fue ocultado.",
                             icon: "success"
                         });
                         recargar(); // Recargar la tabla para reflejar los cambios

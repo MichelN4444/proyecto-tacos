@@ -1,9 +1,5 @@
 'use strict';
 
-function getDefaultExportFromCjs (x) {
-	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
-}
-
 var sweetalert2_all$1 = {exports: {}};
 
 /*!
@@ -3969,328 +3965,17 @@ function requireSweetalert2_all () {
 	return sweetalert2_all$1.exports;
 }
 
-var sweetalert2_allExports = requireSweetalert2_all();
-var Swal$1 = /*@__PURE__*/getDefaultExportFromCjs(sweetalert2_allExports);
-
-const llenarCategorias = () => {
-    fetch('./src/php/api.php?action=obtenerCategorias')
-    .then(response => response.json())
-    .then(data =>{
-        const form = document.getElementById('categoriaProducto');
-        form.innerHTML = '';
-        data.forEach(categoria =>{
-            const option = document.createElement('option');
-            option.value = categoria.id;
-            option.textContent = categoria.nombre;
-            form.appendChild(option);
-        });
-    })
-    .catch(error => console.log('Error al obtener las categorías:', error));
-};
-
-const formulario = ` 
-    <form>
-        <h1>Agregar categorias</h1>
-        <label>Agregar categorias:</label>
-        <input type="text" id="inputCat">
-        <button type="button" id="btnAgregarCat">Agregar categorias</button>
-    </form>
-    <form id='formAgregarProducto'>
-        <h1>Agregar productos</h1> 
-        <label>Categoria:</label>
-        <select name='categoria' id="categoriaProducto">
-
-        </select><br>
-        <label>Introduce el nombre:</label>
-        <input type='text' id="nombreProducto" name="nombre" placeholder='Nombre del producto' required><br>
-        <label for="precioProducto">Precio:</label>
-        <input type="number" id="precioProducto" name="precio" placeholder="Precio del producto" min="0" required><br>
-        <button type="button" id="btnAgregarProducto">Agregar producto</button>
-    </form>
-
-    <br><h1>Modificar productos</h1>
-    <div class="table-contenedor">
-        <table id="productosTabla" border='1'>
-            <thead>
-                <tr>
-                    <th>Nombre del producto</th>
-                    <th>Categoria</th>
-                    <th>Precio</th>
-                    <th>Modificar</th>
-                    <!--<th>Visible en el menú</th>-->
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
-    </div>
-    <button id="editarSeleccionados">Editar seleccionados</button>
-`;
-
-const agregarCategorias = (recargar) => {
-    document.getElementById('btnAgregarCat').addEventListener('click', () =>{
-        let categoria = document.getElementById('inputCat').value;
-        if (categoria) {
-            Swal$1.fire({
-                title: "¿Estas seguro?",
-                text: "Agregarias: " + categoria,
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#3085d6",
-                cancelButtonColor: "#d33",
-                cancelButtonText: "Cancelar",
-                confirmButtonText: "Sí, agregar!"
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    let catjson = {nombre: categoria};
-                    fetch('./src/php/api.php?action=registrarCategoria',{
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                    //se pasan en json
-                        body: JSON.stringify(catjson)
-                    })
-                    .then(response => response.json())
-                    .then(data =>{
-                        if (data.success) {
-                            Swal$1.fire({
-                                position: "center",
-                                icon: "success",
-                                title: "Categoria registrada con exito!.",
-                                showConfirmButton: false,
-                                timer: 1500
-                            });
-                            document.getElementById('inputCat').value = '';
-                            recargar();
-                        }else {
-                            Swal$1.fire("Error: " + data.error);
-                        }
-                    })
-                    .catch(error =>{
-                        Swal$1.fire("Error al agregar");
-                    });
-                }
-            });
-        }
-        else {
-            Swal$1.fire("Por favor, ingresa una categoria.!");
-        }
-});
-};
-
-//Llenar tabla
-const tabla = () => {
-    fetch('./src/php/api.php?action=obtenerProductos')
-    .then(response => response.json())//promise
-    .then(data => {
-        const llenarTabla = document.querySelector('#productosTabla tbody');
-        llenarTabla.innerHTML = ''; 
-        data.forEach(producto => {
-            const fila = document.createElement('tr');
-            fila.innerHTML = `
-                <td>${producto.nombre}</td>
-                <td>${producto.categoria}</td>
-                <td>$${producto.precio}</td>
-                <td><input class="seleccionar" type="checkbox" value="${producto.id}" data-info='${producto.nombre}'></td>
-            `;
-            llenarTabla.appendChild(fila);
-        });
-    })
-    .catch(error => console.error('Error:', error));
-   //Aqui va
-};
-
-const btnEditarProductos = (contenedorEditar, recargar) =>{
-    document.getElementById('editarSeleccionados').addEventListener('click' ,()=>{
-        const seleccionados = document.querySelectorAll('.seleccionar:checked');
-        const ids = Array.from(seleccionados).map(checkbox => checkbox.value);
-        const nombres = Array.from(seleccionados).map(checkbox => checkbox.dataset.info);
-
-        if(seleccionados.length == 0){
-            Swal$1.fire("Selecciona al menos un producto!");
-            return;
-        }
-        //Aqui se crea un formulario para editar o elimar
-        let html = '<form id="editarFormulario">';
-        ids.forEach((id, i) => {
-                html += `
-                    <br><br><label>Producto: ${nombres[i]}</label>
-                    <input type="text" name="nombre_${id}" placeholder="Nuevo nombre">
-                    <input type="number" min="0" name="precio_${id}" placeholder="Nuevo precio">
-                    <select name="categoria_${id}">
-                    <option value="">Selecciona una categoría</option>
-                        
-                    </select>
-                    <button type="button" class='btnEliminar' data-id="${id}">Eliminar producto</button>
-                `;
-        });
-    html += `<br><br><button type="button" id="guardar">Guardar cambios</button></form>`;
-    contenedorEditar.innerHTML = html;
-    
-    fetch('./src/php/api.php?action=obtenerCategorias')
-            .then(response => response.json())
-            .then(data => {
-                const selects = document.querySelectorAll('select[name^="categoria_"]');
-                selects.forEach(select => {
-                    data.forEach(categoria => {
-                        select.innerHTML += `<option value="${categoria.nombre}">${categoria.nombre}</option>`;
-                    });
-                });
-            });
-
-    document.querySelectorAll('.btnEliminar').forEach(btn =>{
-        btn.addEventListener('click', (e)=>{
-            const id = e.target.getAttribute('data-id'); // Obtener el ID del producto
-    
-            // Confirmar antes de eliminar
-            Swal$1.fire({
-                title: "¿Estás seguro?",
-                text: "No podras revertirlo!",
-                icon: "Atencion",
-                showCancelButton: true,
-                confirmButtonColor: "#3085d6",
-                cancelButtonColor: "#d33",
-                cancelButtonText: 'Cancelar',
-                confirmButtonText: "Sí, eliminarlo!"
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    fetch(`http://localhost:82/proyecto-tacos/src/php/api.php?action=eliminarProducto&id=${id}`, {
-                        method: 'POST'
-                    })
-                    .then(response => response.json())
-                    .then(result => {
-                    if (result.success) {
-                        Swal$1.fire({
-                            title: "Eliminado!",
-                            text: "El producto fue eliminado.",
-                            icon: "success"
-                        });
-                        recargar(); // Recargar la tabla para reflejar los cambios
-                    } else {
-                        Swal$1.fire({
-                            title: "Ha ocurrido un error",
-                            showClass: {
-                            popup: `
-                                animate__animated
-                                animate__fadeInUp
-                                animate__faster
-                            `
-                            },
-                            hideClass: {
-                            popup: `
-                                animate__animated
-                                animate__fadeOutDown
-                                animate__faster
-                            `
-                            }
-                        });
-                    }
-                });
-                }
-            });
-        });
-    });
-    document.getElementById('guardar').addEventListener('click', (e) => {
-        e.preventDefault();
-        const form = document.getElementById('editarFormulario');
-        Swal$1.fire({
-            title: "¿Estas seguro?",
-            text: "Cambiaras los datos!",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonColor: "#3085d6",
-            cancelButtonColor: "#d33",
-            cancelButtonText: "Cancelar",
-            confirmButtonText: "Sí, cambiar!"
-        }).then((result) => {
-            if (result.isConfirmed) {
-                if (form) {
-                    const datosProducto = {};
-                    const inputs = form.querySelectorAll('input, select');
-                    inputs.forEach(input => {
-                        const name = input.name;
-                        const value = input.value;
-                        if (name && value) {
-                            // Extraer el ID de la categoría desde el nombre del campo (por ejemplo "categoria_1")
-                            const [campo, id] = name.split('_');
-                            if (!datosProducto[id]) {
-                                datosProducto[id] = {};
-                            }
-                            datosProducto[id][campo] = value;
-                        }
-                    });
-                    fetch('./src/php/api.php?action=editarProductos', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(datosProducto), 
-                    })
-                    .then(response => response.json())
-                    .then(result => {
-                        if (result.success) {
-                            Swal$1.fire({
-                                title: "Actualizado!",
-                                text: "Productos actualizados.",
-                                icon: "success"
-                            });
-                            recargar();
-                        } else {
-                            alert('Error al actualizar los productos');
-                        }
-                    });
-                }
-            }
-        });
-    });
-    });
-};
-//En el html de arriba colocar la tabla en donde se verán los productos que tenemos, podemos tambien hacer las categorias dinamicas
-const agregarProducto = (recargar) =>{
-    const categoria_id = document.getElementById("categoriaProducto").value.trim();
-    const nombre = document.getElementById("nombreProducto").value.trim();
-    const precio = document.getElementById("precioProducto").value.trim();
-
-    // Validar que todos los campos estén completos
-    if (!nombre || !precio || !categoria_id) {
-        Swal$1.fire("Por favor, completa todos los campos obligatorios.");
-        return;
-    }
-
-    // Crear el objeto 
-    const datos = `nombre=${encodeURIComponent(nombre)}&precio=${encodeURIComponent(precio)}&categoria_id=${encodeURIComponent(categoria_id)}`;
-
-    // Enviar los datos por AJAX despues pasarlo con fetch
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", "./src/php/api.php?action=insertarProductos", true);//?action=insertarProductos
-    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-    
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4) {
-            if (xhr.status === 200) {
-                Swal$1.fire(xhr.responseText);
-                // Limpiar campos si se agregó correctamente
-                document.getElementById("formAgregarProducto").reset();
-                recargar();
-            } else {
-                console.log("Error en la solicitud:", xhr.status, xhr.responseText);
-                Swal$1.fire("Error al agregar el producto. Intenta nuevamente.");
-            }
-        }
-    };
-    xhr.send(datos);
-};
+requireSweetalert2_all();
 
 function obtenerFecha(periodo, fecha){
 
     fetch('./src/php/api.php?action=cargarVentas')
     .then(response => response.json())
     .then(ventas => {
-        // mejorProducto(ventas)
-        // mejoresDias(ventas)
+
         totalGanancias(ventas, fecha);
         mejorProducto(ventas, fecha);
+        resumenProductos(ventas, fecha);
         mejoresDias(ventas, periodo, fecha);
     });
 }
@@ -4448,6 +4133,91 @@ function mejorProducto(ventas, fechaFiltro){
         <h2>Producto estrella:</h2> <p>${data.producto} con ${valorMayor} ventas</p><br>`;
     });
 }
+
+function resumenProductos(ventas, fechaFiltro) {
+    let contador = {}; // Objeto para contar la cantidad de ventas por producto
+    let ganancias = {}; // Objeto para sumar las ganancias por producto
+
+    let ventasFiltradas;
+    if (fechaFiltro) {
+        ventasFiltradas = ventas.filter(venta => {
+            const fechaSinHora = venta.fecha_venta.split(' ')[0];
+            if (fechaFiltro.includes('W')) {
+                const [año, semana] = fechaFiltro.split('-W'); // Extraemos año y número de semana
+                const [fechaInicio, fechaFin] = obtenerRangoSemana(año, semana);
+                return fechaSinHora >= fechaInicio && fechaSinHora <= fechaFin;
+            } else if (fechaFiltro.length === 7) {
+                return fechaSinHora.startsWith(fechaFiltro);
+            } else {
+                return fechaSinHora === fechaFiltro;
+            }
+        });
+
+        ventasFiltradas.forEach(venta => {
+            const idProducto = venta.producto_id;
+            const cantidad = parseFloat(venta.cantidad);
+            const precio = parseFloat(venta.precio); // Se asume que 'precio' es el valor de venta por unidad
+
+            // Actualiza las cantidades y las ganancias
+            if (contador[idProducto]) {
+                contador[idProducto].cantidad += cantidad;
+                ganancias[idProducto] += cantidad * precio;
+            } else {
+                contador[idProducto] = { cantidad: cantidad };
+                ganancias[idProducto] = cantidad * precio;
+            }
+        });
+    } else {
+        ventas.forEach(venta => {
+            const idProducto = venta.producto_id;
+            let cantidad = parseFloat(venta.cantidad);
+            let precio = parseFloat(venta.precio);
+
+            if (contador[idProducto]) {
+                contador[idProducto].cantidad += cantidad;
+                ganancias[idProducto] += cantidad * precio;
+            } else {
+                contador[idProducto] = { cantidad: cantidad };
+                ganancias[idProducto] = cantidad * precio;
+            }
+        });
+    }
+
+    // Muestra la información en la tabla
+    const tbody = document.querySelector('.tbody-productos');
+    tbody.innerHTML = ''; // Limpiar contenido previo
+
+    for (const id in contador) {
+        const producto = contador[id];
+        const totalGanancias = ganancias[id];
+        const formatoMoneda = new Intl.NumberFormat('es-MX', {style: 'currency', currency: 'MXN'});
+        
+        // Realiza la petición asíncrona para obtener el nombre del producto
+        fetch('./src/php/api.php?action=obtenerProductosId', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ id_producto: id }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            const nombreProducto = data.producto;
+            data.categoria; // Se asume que 'categoria' es un campo en la respuesta
+            
+            // Añadir fila a la tabla
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${nombreProducto}</td>
+                <td>${producto.cantidad}</td>
+                <td>${formatoMoneda.format(totalGanancias.toFixed(2))}</td>
+            `;
+            tbody.appendChild(row);
+        })
+        .catch(error => console.error('Error al obtener producto:', error));
+    }
+}
+
 
 function mejoresDias(ventas, periodo, fechaFiltro){
     let diasDeLaSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
@@ -4629,11 +4399,20 @@ const menuReportes = document.getElementById('reportes');
 const contenido = document.getElementById('contenido');
 const tickets = {};//Objeto vacio para almacenar tickets
 
-//////////////////////Recuperar mesas
-document.addEventListener('DOMContentLoaded', () => {
-    // Recuperar mesas desde localStorage
-    
-});
+
+// Verificar el rol del usuario al cargar la página
+function actualizaVisualizador() {
+    const userRole = sessionStorage.getItem("userRole");
+
+    // Si el rol es 'user' (mesero), ocultamos las secciones de administrador
+    if (userRole === "user") {
+        document.querySelectorAll('.admin-only').forEach((element) => {
+            element.setAttribute('style', 'display: none !important;');  // Agregar el estilo en línea
+        });
+    }
+}
+
+
 
 /////////////////////////Inicio de sesion//////////////
 // Obtener todas las cookies para que no se salten el login
@@ -4668,8 +4447,6 @@ menuVentas.addEventListener('click',()=>{
             </button>
         `;
     });
-    //////////////////////Tickets por mesa//////////////////////////////////
-    
     // <div>
     // </div>
     // <button class="guardar-btn" onclick="guardarPosiciones()">Guardar Posiciones</button>
@@ -4679,8 +4456,6 @@ menuVentas.addEventListener('click',()=>{
     contenedorBoton.innerHTML = "<button id='btn-agregarMesas'>Agregar mesa</button>";
     contenedorBoton.innerHTML += "<button id='btn-eliminarMesas'>Eliminar mesa</button>";
     contenido.appendChild(contenedorBoton);
-    console.log(contenedorMesas);
-
     document.getElementById('btn-eliminarMesas').addEventListener('click',()=>{
         const mesas = document.querySelectorAll('.mesa');
         const mesasGuardadas = JSON.parse(localStorage.getItem('mesas')) || [];
@@ -4690,7 +4465,6 @@ menuVentas.addEventListener('click',()=>{
 
         const elementoEliminar = document.getElementById(`${idEliminar}`);
 
-        console.log(elementoEliminar);
         contenedorMesas.removeChild(elementoEliminar);
 
         const nuevasMesas = mesasGuardadas.filter(mesa => mesa.id !== idEliminar);
@@ -4822,9 +4596,6 @@ document.getElementById('contenido').addEventListener('click',(e)=>{
     }
 });
     
-
-
-
     function minimizar(index) {
         const ticket = document.querySelector(`.ticket[data-index="${index}"]`);
         if (ticket) {
@@ -4836,59 +4607,86 @@ document.getElementById('contenido').addEventListener('click',(e)=>{
 ///////////////////Inventarios////////////////////
 menuInventarios.addEventListener('click',()=>{
     recargar();
+    actualizaVisualizador();
 });
 
-function recargar (){
-    contenido.innerHTML = '';
-    const contenedorNuevo = document.createElement('div');
-    // contenedorNuevo.id = 'contenedorInventarios';
-    contenedorNuevo.innerHTML = formulario;
-    contenido.appendChild(contenedorNuevo);
-    llenarCategorias();
-    tabla();
-    const btnAgregar = document.getElementById('btnAgregarProducto');
-    btnAgregar.addEventListener('click', ()=>agregarProducto(recargar));
-    const contenedorEditar= document.createElement('div');
-    btnEditarProductos(contenedorEditar, recargar);
-    agregarCategorias(recargar);
-    
-    contenido.appendChild(contenedorEditar);
-}
-
-function exportarPdf(){
+function exportarPdf() {
     const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF();
 
-        const contenido = document.getElementById('resultados');//Lo que se imprime
+    const contenido = document.getElementById('resultados'); // Obtenemos el contenido a imprimir
 
-        html2canvas(contenido, {
-            scale: 3, // Aumenta la resolución (valor más alto = mejor calidad)
-            useCORS: true, // Permite cargar recursos externos con CORS habilitado
-            backgroundColor: "#ffffff",
-            imageSmoothingEnabled: false,
-        }).then(canvas => {
-            const imgData = canvas.toDataURL('image/png'); // Convertir a imagen PNG
+    html2canvas(contenido, {
+        scale: 3,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+        imageSmoothingEnabled: false,
+    }).then(canvas => {
+        const imgData = canvas.toDataURL('image/png'); // Convertir a imagen PNG
 
-            const pdf = new jsPDF({
-                orientation: 'portrait', // Orientación: portrait o landscape
-                unit: 'mm',
-                format: 'a4', // Formato del documento
+        // Agregar la imagen generada por html2canvas al PDF
+        const imgWidth = 190; // Ancho en mm
+        const pageHeight = 297; // Altura en mm
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        let heightLeft = imgHeight;
+        let position = 10;
+
+        if (heightLeft > pageHeight) {
+            while (heightLeft > 0) {
+                pdf.addImage(imgData, 'PNG', 10, position, imgWidth, pageHeight);
+                heightLeft -= pageHeight;
+                position += pageHeight; // Mover hacia abajo para la siguiente página
+                if (heightLeft > 0) {
+                    pdf.addPage(); // Agregar nueva página
+                }
+            }
+        } else {
+            pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+        }
+
+        // Aquí empezamos a dibujar la tabla manualmente
+        const tabla = document.getElementById('tablaVentas'); // Obtener la tabla HTML
+
+        // Definir las posiciones de la tabla
+        let startX = 10;
+        let startY = position + imgHeight + 10; // Ajustar la posición para que no quede encima de la imagen
+        const rowHeight = 10; // Altura de cada fila
+        const colWidths = [50, 50, 50]; // Anchos de las columnas
+        const margin = 5; // Márgenes dentro de las celdas
+        let currentY = startY;
+
+        // Dibujar las filas de la tabla
+        Array.from(tabla.rows).forEach((row, rowIndex) => {
+            // Verificar si la fila se ajusta a la página actual
+            if (currentY + rowHeight > pageHeight) {
+                pdf.addPage(); // Si no cabe, agregamos una nueva página
+                currentY = 10; // Reiniciar la posición en la nueva página
+            }
+
+            // Dibujar celdas de la fila
+            Array.from(row.cells).forEach((cell, colIndex) => {
+                // Dibujar el rectángulo para cada celda
+                pdf.rect(startX + colWidths[colIndex] * colIndex, currentY, colWidths[colIndex], rowHeight);
+
+                // Escribir el texto en la celda
+                pdf.text(cell.textContent, startX + colWidths[colIndex] * colIndex + margin, currentY + 7); // +7 para centrar el texto verticalmente
             });
 
-            // Ajustar dimensiones para el PDF
-            const imgWidth = 190; // Ancho en mm
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-            pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight, '', 'FAST'); // 'FAST' mejora la calidad
-
-            pdf.save('archivo_mejorado.pdf'); // Descargar el PDF
+            currentY += rowHeight; // Mover hacia abajo para la siguiente fila
         });
+
+        // Descargar el PDF con el nombre "Resumen_Ventas.pdf"
+        pdf.save('Resumen_Ventas.pdf');
+    });
 }
+
 window.exportarPdf = exportarPdf;
 
 menuReportes.addEventListener('click', () => {
     contenido.innerHTML = '';
     const contenedorNuevo = document.createElement('div');
     contenedorNuevo.setAttribute('id', 'resultados');
+    contenedorNuevo.classList.add('admin-only');
 
     
     // Crear el elemento canvas
@@ -4930,14 +4728,19 @@ menuReportes.addEventListener('click', () => {
     <p id="productoMasVendido"></p>
     <p id="mejoresDias"></p>
     <p id="totalGanancias"></p><br>
-    <table>
-        <tr>
-            <th>Producto</th>
-            <th>Ventas</th>
-            <th>Ganancia</th>
-        <tr>
-
-    </table>
+    <div class="table-contenedor">
+        <table id="tablaVentas" border="1" class="tabla-productos">
+            <thead class="thead-productos">
+                <tr class="fila-encabezado">
+                    <th class="columna-nombre">Nombre del producto</th>
+                    <th class="columna-modificar">Ventas</th>
+                    <th class="columna-modificar">Ganancias</th>
+                </tr>
+            </thead>
+            <tbody class="tbody-productos">
+            </tbody>
+        </table>
+    </div>
     `;
 
 
@@ -5007,7 +4810,7 @@ menuReportes.addEventListener('click', () => {
     });
 
     ventas();
-
+    actualizaVisualizador();
 });
 
 

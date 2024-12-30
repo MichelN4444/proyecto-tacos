@@ -47,16 +47,20 @@ switch ($action) {
     case 'generarTicket':
         generarTicket();
         break;
+    case 'desocultarProducto':
+        desocultarProducto();
+        break;
     default:
         echo json_encode(['error' => 'Invalid action']);
         break;
 }
 
+
 function obtenerProductos(){
     global $conn;
     
     // Realizamos el JOIN con la tabla categorias
-    $query = "SELECT productos.id, productos.nombre, productos.precio, productos.creado_en, categorias.nombre AS categoria_nombre
+    $query = "SELECT productos.id, productos.nombre, productos.precio, productos.creado_en, categorias.nombre AS categoria_nombre, productos.activo
             FROM productos
             INNER JOIN categorias ON productos.categoria_id = categorias.id";
 
@@ -70,7 +74,8 @@ function obtenerProductos(){
                 'nombre' => $row['nombre'],
                 'precio' => $row['precio'],
                 'creado_en' => $row['creado_en'],
-                'categoria' => $row['categoria_nombre']  // Aquí agregamos el nombre de la categoria
+                'categoria' => $row['categoria_nombre'],  // Aquí agregamos el nombre de la categoria
+                'activo' => $row['activo']
             ];
         }
         echo json_encode($productos);
@@ -83,12 +88,13 @@ function obtenerProductos(){
 function cargarProductos(){
     global $conn;
     $sql = "SELECT 
-    p.nombre AS producto_nombre, 
-    c.nombre AS categoria_nombre, 
-    p.precio, 
-    p.id 
+        p.nombre AS producto_nombre, 
+        c.nombre AS categoria_nombre, 
+        p.precio, 
+        p.id 
     FROM productos p
-    JOIN categorias c ON p.categoria_id = c.id";
+    JOIN categorias c ON p.categoria_id = c.id
+    WHERE p.activo = 1";
 
     $result = $conn->query($sql);
 
@@ -194,7 +200,29 @@ function editarProductos() {
     }
 }
 
+function desocultarProducto(){
+    global $conn;
 
+    $id = $_GET['id'] ?? null;
+
+    if (!$id) {
+        echo json_encode(['error' => 'ID del producto no proporcionado']);
+        exit;
+    }
+
+    $sql = "UPDATE productos SET activo = 1 WHERE id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $id);
+
+    if ($stmt->execute()) {
+        echo json_encode(['success' => 'Producto desocultado correctamente']);
+    } else {
+        echo json_encode(['error' => 'Error al desocultar el producto']);
+    }
+
+    $stmt->close();
+    $conn->close();
+}
 function eliminarProducto() {
     global $conn;
 
@@ -205,7 +233,7 @@ function eliminarProducto() {
         exit;
     }
 
-    $sql = "DELETE FROM productos WHERE id = ?";
+    $sql = "UPDATE productos SET activo = 0 WHERE id = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $id);
 
