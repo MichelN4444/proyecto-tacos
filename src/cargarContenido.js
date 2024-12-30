@@ -13,7 +13,7 @@ const tickets = {};//Objeto vacio para almacenar tickets
 // Verificar el rol del usuario al cargar la página
 function actualizaVisualizador() {
     const userRole = sessionStorage.getItem("userRole");
-
+    console.log('se ejecuta');
     // Si el rol es 'user' (mesero), ocultamos las secciones de administrador
     if (userRole === "user") {
         document.querySelectorAll('.admin-only').forEach((element) => {
@@ -238,6 +238,24 @@ menuInventarios.addEventListener('click',()=>{
     recargar();
     actualizaVisualizador();
 })
+
+function recargar (){
+    contenido.innerHTML = ''
+    const contenedorNuevo = document.createElement('div');
+    contenedorNuevo.classList.add('admin-only')
+    contenedorNuevo.innerHTML = formulario;
+    contenido.appendChild(contenedorNuevo);
+    llenarCategorias();
+    tabla();
+    const btnAgregar = document.getElementById('btnAgregarProducto');
+    btnAgregar.addEventListener('click', ()=>agregarProducto(recargar))
+    const contenedorEditar= document.createElement('div');
+    btnEditarProductos(contenedorEditar, recargar);
+    agregarCategorias(recargar);
+    
+    contenido.appendChild(contenedorEditar);
+}
+
 
 function exportarPdf() {
     const { jsPDF } = window.jspdf;
