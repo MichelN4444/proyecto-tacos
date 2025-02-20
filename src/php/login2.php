@@ -18,11 +18,12 @@ if ($result->num_rows > 0) {
     // Verificar contraseña encriptada
     if ($password === $user['password_u']) {
         if ($user['role'] == 'admin') {
+            setcookie("login", "true", time() + (7 * 24 * 60 * 60), "/");// Una semana
             echo "admin";
         }else if ($user['role'] == 'user') {
+            setcookie("login", "true", time() + (24 * 60 * 60), "/"); // Cookie de sesión válida por 1 día
             echo "user";
         }
-        setcookie("login", "true", time() + 3600, "/"); // Cookie de sesión válida por 1 hora
     } else {
         echo "Usuario o contraseña incorrectos";
     }

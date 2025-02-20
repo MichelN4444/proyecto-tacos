@@ -3,6 +3,10 @@ botonLogin.addEventListener('click',(e)=>{
     e.preventDefault();
     login();
 })
+const cookies = document.cookie;
+if (cookies.split("; ").some(cookie => cookie.startsWith("login="))) {
+    window.location.replace("./menu.html");
+} 
 
 function login() {
     const username = document.getElementById('username').value;

@@ -9,6 +9,13 @@ const menuReportes = document.getElementById('reportes');
 const contenido = document.getElementById('contenido');
 let tickets = JSON.parse(localStorage.getItem('tickets')) || {};//Objeto vacio para almacenar tickets
 
+// Obtener todas las cookies para que no se salten el login
+const cookies = document.cookie;
+// Verificar si la cookie "login" existe
+if (!cookies.split("; ").some(cookie => cookie.startsWith("login="))) {
+    window.location.replace("./index.html");
+} 
+
 document.addEventListener('DOMContentLoaded', () => {
     const tickets = JSON.parse(localStorage.getItem('tickets')) || {};
     for (const index in tickets) {
@@ -29,14 +36,6 @@ function actualizaVisualizador() {
             element.setAttribute('style', 'display: none !important;');  // Agregar el estilo en línea
         });
     }
-}
-
-/////////////////////////Inicio de sesion//////////////
-// Obtener todas las cookies para que no se salten el login
-const cookies = document.cookie;
-// Verificar si la cookie "login" existe
-if (!cookies.split("; ").some(cookie => cookie.startsWith("login="))) {
-    window.location.replace("./index.html");
 }
 
 //////////////////////////////////////////7
